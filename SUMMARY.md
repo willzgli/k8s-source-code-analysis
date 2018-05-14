@@ -1,6 +1,6 @@
-kubectl
+- #### kubectl
 
+- #### kube-api
 
-kube-api
+- #### kube-proxy
 
-kube-proxy
