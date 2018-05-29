@@ -1,0 +1,490 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>进入命令 · k8s 相关源码分析</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="rootdeep <zhiguo.lee@foxmail.com>">
+        
+        
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="construct-visitor.html" />
+    
+    
+    <link rel="prev" href="./" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="http://rootdeep.github.io" target="_blank" class="custom-link">rootdeep</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    kubectl  
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter active" data-level="1.2.1" data-path="enter-command.html">
+            
+                <a href="enter-command.html">
+            
+                    
+                    进入命令
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="construct-visitor.html">
+            
+                <a href="construct-visitor.html">
+            
+                    
+                    Visitor 实例构建
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="run-visit.html">
+            
+                <a href="run-visit.html">
+            
+                    
+                    Visit 方法执行
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="info-generation.html">
+            
+                <a href="info-generation.html">
+            
+                    
+                    info 实例生成
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" >
+            
+                <span>
+            
+                    
+                    kube-apiserver
+            
+                </span>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >进入命令</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="&#x8FDB;&#x5165;kubectl-&#x547D;&#x4EE4;">&#x8FDB;&#x5165;kubectl &#x547D;&#x4EE4;</h1>
+<p>k8s.io/kubernetes/cmd/kubectl/kubectl.go</p>
+<pre><code>func main() {
+    if err := app.Run(); err != nil {
+        fmt.Fprintf(os.Stderr, &quot;error: %v\n&quot;, err)
+        os.Exit(1)
+    }
+    os.Exit(0)
+}
+</code></pre><p>&#x5728;Run() &#x65B9;&#x6CD5;&#x4E2D;&#xFF0C;&#x521B;&#x5EFA;&#x548C;&#x6267;&#x884C;&#x4E00;&#x4E2A;kubectl &#x547D;&#x4EE4;&#xFF0C; &#x8FD9;&#x4E2A;&#x547D;&#x4EE4;&#x4F7F;&#x7528;cobra &#x6846;&#x67B6;&#x5B9E;&#x73B0;&#x3002;Cobra&#x662F;&#x4E00;&#x4E2A;go &#x8BED;&#x8A00;&#x5B9E;&#x73B0;&#x7684;&#x547D;&#x4EE4;&#x63A5;&#x53E3;&#x6846;&#x67B6;&#xFF0C;&#x4E2A;&#x4EBA;&#x7406;&#x89E3;&#x5176;&#x7C7B;&#x4F3C;&#x4E8E;OpenStack &#x547D;&#x4EE4;&#x5B9E;&#x73B0;&#x4E2D;&#x7528;&#x5230;&#x7684;Cliff &#x3002;</p>
+<p>Run() &#x91CC;&#x7EE7;&#x7EED;&#x8C03;&#x7528;NewKubectlCommand()   &#x4E0E; execute() &#x65B9;&#x6CD5;&#x3002;</p>
+<p>k8s.io/kubernetes/cmd/kubectl/app/kubectl.go</p>
+<pre><code>func Run() error {
+    logs.InitLogs()
+    defer logs.FlushLogs()
+
+    cmd := cmd.NewKubectlCommand(cmdutil.NewFactory(nil), os.Stdin, os.Stdout, os.Stderr)
+    return cmd.Execute()
+}
+</code></pre><p>&#x5728;NewKubectlCommand()  <em>[k8s.io/kubernetes/pkg/kubectl/cmd/cmd.go ]&#x4E2D;</em> &#xFF0C;&#x901A;&#x8FC7;&#x76F4;&#x63A5;&#x6216;&#x95F4;&#x63A5;&#x8C03;&#x7528;cmd.AddCommand() &#x5B8C;&#x6210;&#x5B50;&#x547D;&#x4EE4;&#x7684;&#x6DFB;&#x52A0;&#xFF0C;&#x751F;&#x6210;kubectl &#x547D;&#x4EE4;&#x96C6;&#x3002; &#x6240;&#x6709;&#x7684;&#x547D;&#x4EE4;&#x90FD;&#x5B9E;&#x73B0;&#x4E86; cobra.Command&#x63A5;&#x53E3;&#xFF0C;&#x8BE5;&#x63A5;&#x53E3;&#x5177;&#x6709;&#x7684;&#x5C5E;&#x6027;&#x53CA;&#x65B9;&#x6CD5;&#x5982;&#x4E0B;&#xFF1A;</p>
+<p>github.com/spf13/cobra/command.go </p>
+<pre><code>type Command struct {
+    name string
+    Use string
+    Short string
+    Long string
+    Example string
+    parent *Command
+    ...
+    PersistentPreRun()
+    PreRun()
+    Run()
+    PostRun()
+    PersistentPostRun()
+    ...
+}
+
+func (c *Command) Execute() { } 
+func (c *Command) ExecuteC() (cmd *Command, err error) { }
+func (c *Command) execute(a []string) (err error) { }
+
+//AddCommad &#x65B9;&#x6CD5;&#x4E2D;&#x5B9E;&#x73B0;&#x6DFB;&#x52A0;&#x5B50;&#x547D;&#x4EE4;&#xFF0C;&#x53CA;&#x5BF9;&#x5B50;&#x547D;&#x4EE4;&#x7684;parent&#x5C5E;&#x6027;&#x8D4B;&#x503C;&#x3002;
+func (c *Command) AddCommand(cmds ...*Command) { }
+...
+</code></pre><p>kubectl &#x76F8;&#x5173;&#x547D;&#x4EE4;&#x5B9E;&#x73B0;&#x8BE5;&#x63A5;&#x53E3;&#xFF08;&#x5C5E;&#x6027;&#x4E0E;&#x65B9;&#x6CD5;&#xFF09;&#x65F6;&#xFF0C;&#x91CD;&#x70B9;&#x5173;&#x6CE8;&#x7684;&#x662F;Run() &#x65B9;&#x6CD5;&#xFF0C;Run() &#x65B9;&#x6CD5;&#x662F;&#x66F4;&#x5177;&#x4F53;&#x7684;&#x4EFB;&#x52A1;&#x6267;&#x884C;&#x7684;&#x65B9;&#x6CD5;&#x3002;&#x4F8B;&#x5982;&#xFF0C;&#x5728;NewKubectlCommand() &#x5B9E;&#x73B0;&#x4E86;kubectl &#x7684;&#x9876;&#x5C42;&#x547D;&#x4EE4;<code>kubectl xxx</code> &#xFF0C;&#x5728;&#x8BE5;&#x9876;&#x5C42;&#x65B9;&#x6CD5;&#x4E2D;&#x62BD;&#x8C61;Run() &#x7528;runHelp()  &#x8FDB;&#x884C;&#x5B9E;&#x4F8B;&#x5316;;&#x5728;&#x5176;&#x5B50;&#x547D;&#x4EE4;<code>kubectl create -f xxx</code>&#x7684;&#x65B9;&#x6CD5;&#x4E2D;&#xFF0C;&#x62BD;&#x8C61;Run() &#x5728;NewCmdCreate(&#xFF09;&#x65B9;&#x6CD5;&#x4E2D;&#x5B9E;&#x73B0;&#x3002;</p>
+<p>&#x90A3;&#x4E48;&#x8FD9;&#x4E9B;Run( ) &#x65B9;&#x6CD5;&#x662F;&#x4F55;&#x65F6;&#x88AB;&#x8C03;&#x7528;&#x7684;&#x5462;&#xFF1F;&#x56DE;&#x5230;cmd.Execute()&#xFF0C;&#x770B;&#x4E00;&#x4E0B;Execute( ) &#x65B9;&#x6CD5;&#x7684;&#x884C;&#x4E3A;&#x3002;Execute() &#x65B9;&#x6CD5;&#x7684;&#x5927;&#x81F4;&#x6267;&#x884C;&#x6D41;&#x7A0B;&#x662F; Execute() -&gt; ExecuteC() -&gt;execute()&#xFF0C;&#x8D70;&#x5230;execute &#x65B9;&#x6CD5;&#xFF0C;&#x770B;&#x5176;&#x5B9E;&#x73B0;&#xFF1A;</p>
+<p>github.com/spf13/cobra/command.go </p>
+<pre><code> func (c *Command) execute(a []string) (err error) {
+    ...
+    c.initHelpFlag()
+    ...
+
+    c.preRun()
+    ... 
+    if c.RunE != nil {
+        if err := c.RunE(c, argWoFlags); err != nil {
+            return err
+        }
+    } else {
+        c.Run(c, argWoFlags)
+    }
+
+    ...
+    return nil
+}
+</code></pre><p>&#x53EF;&#x4EE5;&#x770B;&#x5230;&#xFF0C;Command &#x63A5;&#x53E3;&#x4E2D;&#x7684;&#x5404;&#x79CD; Run&#x65B9;&#x6CD5;&#x5728;execute&#x90FD;&#x5F97;&#x5230;&#x4E86;&#x8C03;&#x7528;&#x3002;</p>
+<p>&#x4E0B;&#x9762;&#x4EE5;<code>kubectl create -f  filename</code>&#x547D;&#x4EE4;&#x6267;&#x884C;&#x5F00;&#x59CB;&#xFF0C;&#x770B;&#x4E00;&#x4E0B;pod &#x521B;&#x5EFA;&#x7684;&#x6267;&#x884C;&#x6D41;&#x7A0B;&#x3002;</p>
+<p> &#x9996;&#x5148;&#xFF0C;&#x770B;&#x4E00;&#x4E0B; create &#x547D;&#x4EE4;&#x7684;Run() &#x65B9;&#x6CD5;&#x5B9E;&#x73B0;&#x3002;</p>
+<p>k8s.io/kubernetes/pkg/kubectl/cmd/create.go</p>
+<pre><code>func NewCmdCreate(f cmdutil.Factory, out, errOut io.Writer) *cobra.Command {
+    ...
+    cmd := &amp;cobra.Command{
+        ...
+        Run: func(cmd *cobra.Command, args []string) {
+            if cmdutil.IsFilenameSliceEmpty(options.FilenameOptions.Filenames) {
+                defaultRunFunc := cmdutil.DefaultSubCommandRun(errOut)
+                defaultRunFunc(cmd, args)
+                return
+            }
+            cmdutil.CheckErr(options.ValidateArgs(cmd, args))
+            cmdutil.CheckErr(RunCreate(f, cmd, out, errOut, &amp;options))
+        },
+    }
+    ...
+}
+</code></pre><p>&#x518D;&#x8FDB;&#x4E00;&#x6B65;&#xFF0C;create&#x547D;&#x4EE4;&#x4E2D;&#x6267;&#x884C;&#x4EFB;&#x52A1;&#x7684;&#x662F; RunCreate() &#x65B9;&#x6CD5;&#x3002;&#x9996;&#x5148;&#x9700;&#x8981;&#x660E;&#x767D;&#x53C2;&#x6570; f &#x7684;&#x6765;&#x6E90;&#x3002;</p>
+<p>&#x5411;&#x4E0A;&#x56DE;&#x6EAF;&#xFF0C;&#x53D1;&#x73B0;&#x53C2;&#x6570;f &#x662F;&#x5728;&#x8F83;&#x9876;&#x5C42;&#x7684;<code>cmd.NewKubectlCommand()</code>&#x65B9;&#x6CD5;&#x53C2;&#x6570;&#x4E2D;&#x751F;&#x6210;&#x7684;&#xFF0C;</p>
+<p>&#x5373; f = cmdutil.NewFactory(nil)&#x3002;&#x8FDB;&#x5165;NewFactory() &#x65B9;&#x6CD5;&#xFF0C;&#x770B;&#x5176;&#x5B9E;&#x73B0;</p>
+<p>k8s.io/kubernetes/pkg/kubectl/cmd/util/factory.go</p>
+<pre><code>func NewFactory(optionalClientConfig clientcmd.ClientConfig) Factory {
+    clientAccessFactory := NewClientAccessFactory(optionalClientConfig)
+    objectMappingFactory := NewObjectMappingFactory(clientAccessFactory)
+    builderFactory := NewBuilderFactory(clientAccessFactory, objectMappingFactory)
+
+    return &amp;factory{
+        ClientAccessFactory:  clientAccessFactory,
+        ObjectMappingFactory: objectMappingFactory,
+        BuilderFactory:       builderFactory,
+    }
+}
+</code></pre><p>&#x867D;&#x7136;NewFactory() &#x7684;&#x5B9E;&#x73B0;&#x770B;&#x8D77;&#x6765;&#x7B80;&#x5355;&#xFF0C;&#x8FD4;&#x56DE;&#x7684;&#x662F;&#x4E00;&#x4E2A;&#x521D;&#x59CB;&#x5316;&#x7684;factory &#x7ED3;&#x6784;&#x4F53;&#x5B9E;&#x4F8B;&#x3002;factory&#x7ED3;&#x6784;&#x4F53;&#x58F0;&#x660E;&#x65F6;&#x53EA;&#x6709;&#x4E09;&#x4E2A;&#x53D8;&#x91CF;&#xFF0C;&#x6BCF;&#x4E00;&#x4E2A;&#x90FD;&#x662F;&#x4E00;&#x4E2A;&#x63A5;&#x53E3;&#x540D;&#xFF0C;&#x6BCF;&#x4E2A;&#x63A5;&#x53E3;&#x4E0B;&#x90FD;&#x6709;&#x5F88;&#x591A;&#x62BD;&#x8C61;&#x7684;&#x65B9;&#x6CD5;&#x3002;&#x6240;&#x4EE5;&#xFF0C;&#x5728;&#x5B9E;&#x4F8B;&#x5316;&#x8FD9;&#x4E2A;factory&#x7ED3;&#x6784;&#x4F53;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x5B9E;&#x9645;&#x4E0A;&#x662F;&#x5BF9;&#x51E0;&#x5341;&#x4E2A;&#x62BD;&#x8C61;&#x65B9;&#x6CD5;&#x7684;&#x5B9E;&#x73B0;&#x3002;&#x5177;&#x4F53;&#x7684;&#xFF1A;</p>
+<ol>
+<li>clientAccessFactory&#x53D8;&#x91CF;&#x662F;&#x4E00;&#x4E2A; ring0Factory &#x7ED3;&#x6784;&#x4F53;&#x5B9E;&#x4F8B;&#x3002;&#x8BE5;&#x7ED3;&#x6784;&#x4F53;&#x4E2D;&#xFF0C;&#x5B9E;&#x73B0;&#x4E86;&#x63A5;&#x53E3;ClientAccessFactory&#x4E2D;&#x5B9A;&#x4E49;&#x7684;&#x6240;&#x6709;&#x65B9;&#x6CD5;&#x3002;<em>[k8s.io/kubernetes/pkg/kubectl/cmd/util/factory_client_access.go]</em></li>
+<li>objectMappingFactory &#x53D8;&#x91CF;&#x662F;&#x4E00;&#x4E2A;ring1Factory &#x7ED3;&#x6784;&#x4F53;&#x5B9E;&#x4F8B;&#x3002;<em>[util/factory_object_mapping.go]</em></li>
+<li>builderFactory &#x53D8;&#x91CF;&#x662F;&#x4E00;&#x4E2A;ring2Factory &#x7ED3;&#x6784;&#x4F53;&#x5B9E;&#x4F8B;&#x3002;<em>[util/factory_builder.go]</em></li>
+</ol>
+<pre><code>discoveryFactory :=  &amp;discoveryFactory{clientConfig: clientConfig}
+
+clientCache := NewClientCache(clientConfig, discoveryFactory)
+
+clientAccessFactory := &amp;ring0Factory{
+        flags:            flags,
+        clientConfig:     clientConfig,
+        discoveryFactory: discoveryFactory
+        clientCache:      clientCache,
+    }
+
+objectMappingFactory := &amp;ring1Factory{
+        clientAccessFactory: clientAccessFactory, // &#x4E0A;&#x8FB9;&#x5B9E;&#x4F8B;&#x5316;&#x7684;clientAccessFactory
+    }
+
+builderFactory:=  &amp;ring2Factory{
+        clientAccessFactory:  clientAccessFactory,
+        objectMappingFactory: objectMappingFactory,
+    }
+</code></pre><p>ring1Factory,  ring2Factory &#x7ED3;&#x6784;&#x4F53;&#x7684;&#x5B9E;&#x4F8B;&#x5316;&#x90FD;&#x8D56;&#x4E8E;ring0Factory&#x7ED3;&#x6784;&#x4F53;&#x7684;&#x5B9E;&#x4F8B;clientAccessFactory &#x3002;&#x6240;&#x4EE5;&#xFF0C;&#x641E;&#x5B9A;clientAccessFactory &#x5B9E;&#x4F8B;&#x7684;&#x521D;&#x59CB;&#x5316;</p>
+<p> &#x5F04;&#x6E05;&#x4E86;&#x53C2;&#x6570; f &#x7684;&#x6765;&#x5386;&#x540E;&#xFF0C;&#x518D;&#x8FD4;&#x56DE;&#x5230;RunCreate() &#x65B9;&#x6CD5;&#xFF0C;&#x770B;&#x5176;&#x5B9E;&#x73B0;&#x3002;</p>
+<p>pkg/kubectl/cmd/create.go</p>
+<pre><code>func RunCreate(f cmdutil.Factory, cmd *cobra.Command, out, errOut io.Writer, options *CreateOptions) error {
+    if len(options.Raw) &gt; 0 {...}
+    ...
+
+    /*cmdutil.GetFlagBool(cmd, &quot;validate&quot;) &#x9ED8;&#x8BA4;&#x4E3A;true
+      schema &#x4E3A;Schema &#x5217;&#x8868;&#xFF0C;&#x5305;&#x542B;&#x4E86;&#x5BF9;&#x8D44;&#x6E90;&#x6587;&#x4EF6;&#x7684;&#x9A8C;&#x8BC1;&#x65B9;&#x6CD5;&#x5217;&#x8868;*/
+    schema, err := f.Validator(cmdutil.GetFlagBool(cmd, &quot;validate&quot;)) 
+
+    /*cmdNamepace &#x63A5;&#x6536; &#x547D;&#x4EE4;&#x884C;&#x4E2D;&#x6307;&#x5B9A;&#x7684;namepace &#x503C;,enforceNamespace &#x4E00;&#x822C;&#x4E3A;true */ 
+    cmdNamespace, enforceNamespace, err := f.DefaultNamespace() 
+
+    r := f.NewBuilder().
+        Unstructured().
+        Schema(schema).
+        ContinueOnError().
+        NamespaceParam(cmdNamespace).DefaultNamespace().
+        FilenameParam(enforceNamespace, &amp;options.FilenameOptions).
+        LabelSelectorParam(options.Selector).
+        Flatten().
+        Do()
+    ...
+    err = r.Visit(func(info *resource.Info, err error) error {...}
+}
+</code></pre><p>&#x4E3B;&#x8981;&#x770B;f.NewBuilder() &#x548C;r.Visit()&#x3002;f.NewBuilder() &#x8FD4;&#x56DE;&#x4E00;&#x4E2A;Builder &#x7ED3;&#x6784;&#x4F53; <em>[pkg/kubectl/resource/builder.go]</em> &#x5B9E;&#x4F8B;&#x3002;f.NewBuilder() &#x540E;&#x8FB9;&#x8C03;&#x7528;&#x7684;&#x65B9;&#x6CD5;&#x5F88;&#x591A;&#xFF0C;Unstructured&#x3001;Schema&#x3001;ContinueOnError&#x3001;NamespaceParam&#x3001;FilenameParam&#x3001;LabelSelectorParam&#x548C;Flatten&#x90FD;&#x662F;Builder&#x7ED3;&#x6784;&#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x5E76;&#x8FD4;&#x56DE;Builder &#x7ED3;&#x6784;&#x7684;&#x6307;&#x9488;&#x3002;&#x6267;&#x884C;&#x8FD9;&#x4E9B;&#x65B9;&#x6CD5;&#x7C7B;&#x4F3C;&#x4E00;&#x4E2A;&#x6D41;&#x6C34;&#x7EBF;&#x5DE5;&#x4F5C;&#xFF0C;&#x6BCF;&#x4E2A;&#x65B9;&#x6CD5;&#x6267;&#x884C;&#x4E00;&#x4E9B;&#x5BF9;Builder&#x7ED3;&#x6784;&#x4F53;&#x5B9E;&#x4F8B;&#x7684;&#x4FEE;&#x6539;&#xFF0C;&#x5E76;&#x4E14;&#x5C06;&#x8FD9;&#x4E2A;&#x5B9E;&#x4F8B;&#x8FD4;&#x56DE;&#x7ED9;&#x4E2D;&#x7EBF;&#x4E0A;&#x7684;&#x4E0B;&#x4E00;&#x4E2A;&#x65B9;&#x6CD5;&#x6765;&#x6267;&#x884C;&#x5176;&#x4ED6;&#x4FEE;&#x6539;&#xFF0C;&#x6700;&#x540E;&#x5B9E;&#x4F8B;&#x8C03;&#x7528;Do() &#x65B9;&#x6CD5;&#xFF0C;&#x8FD9;&#x4E9B;&#x65B9;&#x6CD5;&#x7684;&#x5B9E;&#x73B0;&#x90FD;&#x5728;<code>pkg/kubectl/resource/result.go</code>  &#x6587;&#x4EF6;&#x4E2D;&#x3002;Do() &#x65B9;&#x6CD5;&#x8FD4;&#x56DE;&#x503C; r &#x7684;&#x662F;&#x4E00;&#x4E2A;Result &#x7ED3;&#x6784;&#x4F53;&#x5B9E;&#x4F8B; <em>[pkg/kubectl/resource/result.go]</em>&#x3002;</p>
+<p> &#x63A5;&#x7740;&#x5BF9;&#x8C61; r &#x8C03;&#x7528;Visit()&#x65B9;&#x6CD5; &#x3002;&#x4F20;&#x5165;Visit()&#x7684;&#x53C2;&#x6570;&#x4E00;&#x4E2A;VisitorFunc &#x7C7B;&#x578B;&#x7684;&#x533F;&#x540D;&#x51FD;&#x6570; &#xFF0C;&#x8BB0;&#x533F;&#x540D;&#x51FD;&#x6570;&#x540D;&#x79F0;&#x4E3A; fn_ins0, &#x8BE5;&#x51FD;&#x6570;&#x771F;&#x6B63;&#x6267;&#x884C;&#x7684;&#x5730;&#x65B9;&#x5C06;&#x5728; <strong><u>Visit &#x65B9;&#x6CD5;&#x6267;&#x884C;</u></strong> &#x4E00;&#x8282; &#x5206;&#x6790;&#x3002;&#x5148;&#x770B;&#x5230;Visit()&#x7684;&#x5B9E;&#x73B0;&#xFF1A;</p>
+<p>pkg/kubectl/resource/result.go</p>
+<pre><code>func (r *Result) Visit(fn VisitorFunc) error {
+    if r.err != nil {
+        return r.err
+    }
+    err := r.visitor.Visit(fn)
+    return utilerrors.FilterOut(err, r.ignoreErrors...)
+}
+</code></pre><p>&#x5BF9;&#x8C61;r&#x7684;&#x5C5E;&#x6027;visitor &#x4E3A; Visitor &#x63A5;&#x53E3;&#x7C7B;&#x578B;&#xFF0C;Visitor &#x8BE5;&#x63A5;&#x53E3;&#x7684;&#x58F0;&#x660E;&#x4E3A;&#xFF1A;</p>
+<p>pkg/kubectl/resource/visitor.go</p>
+<pre><code>type Visitor interface {
+    Visit(VisitorFunc) error
+}
+</code></pre><p>&#x4EE3;&#x7801;&#x4E2D;&#x4F7F;&#x7528;&#x4E86;&#x591A;&#x6001;&#x7684;&#x65B9;&#x5F0F;&#x5B9E;&#x73B0;&#x4E86;&#x8BE5;&#x63A5;&#x53E3;&#xFF08;&#x4E3B;&#x8981;&#x96C6;&#x4E2D;&#x5728;pkg/kubectl/resource/visitor.go &#x548C; pkg/kubectl/resource/selector.go&#x6587;&#x4EF6;&#x4E2D;&#xFF09;&#x3002;&#x6B64;&#x5904;&#x5177;&#x4F53;&#x8C03;&#x7528;&#x7684;&#x662F;&#x54EA;&#x4E2A;Visit() &#x65B9;&#x6CD5;&#xFF0C;&#x9700;&#x8981;&#x56DE;&#x5230;Do() &#x65B9;&#x6CD5;&#x4E2D;&#x770B;Result &#x5B9E;&#x4F8B;&#x7684;&#x751F;&#x6210;&#x53CA;&#x5C5E;&#x6027;visitor &#x88AB;&#x8D4B;&#x4E88;&#x7684;&#x5177;&#x4F53;&#x7C7B;&#x578B;&#x3002;</p>
+<p>&#x4E0B;&#x6587;&#x5C06;&#x5206;&#x6790;Builder &#x7ED3;&#x6784;&#x4F53;&#x5B9E;&#x4F8B; &#x53CA; visitor &#x5C5E;&#x6027;&#x7684;&#x5F62;&#x6210;&#x3002;</p>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="./" class="navigation navigation-prev " aria-label="Previous page: kubectl  ">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="construct-visitor.html" class="navigation navigation-next " aria-label="Next page: Visitor 实例构建">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"进入命令","level":"1.2.1","depth":2,"next":{"title":"Visitor 实例构建","level":"1.2.2","depth":2,"path":"kubectl/construct-visitor.md","ref":"kubectl/construct-visitor.md","articles":[]},"previous":{"title":"kubectl  ","level":"1.2","depth":1,"path":"kubectl/README.md","ref":"kubectl/README.md","articles":[{"title":"进入命令","level":"1.2.1","depth":2,"path":"kubectl/enter-command.md","ref":"kubectl/enter-command.md","articles":[]},{"title":"Visitor 实例构建","level":"1.2.2","depth":2,"path":"kubectl/construct-visitor.md","ref":"kubectl/construct-visitor.md","articles":[]},{"title":"Visit 方法执行","level":"1.2.3","depth":2,"path":"kubectl/run-visit.md","ref":"kubectl/run-visit.md","articles":[]},{"title":"info 实例生成","level":"1.2.4","depth":2,"path":"kubectl/info-generation.md","ref":"kubectl/info-generation.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":[],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"rootdeep <zhiguo.lee@foxmail.com>","pdf":{"pageBreaksBefore":"/","headerTemplate":null,"paperSize":"a4","margin":{"right":62,"left":62,"top":36,"bottom":36},"fontSize":12,"fontFamily":"Arial","footerTemplate":null,"chapterMark":"pagebreak","pageNumbers":false},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"k8s 相关源码分析","links":{"sidebar":{"rootdeep":"http://rootdeep.github.io"}},"gitbook":"*","description":"This is a sample book created by gitbook","extension":null},"file":{"path":"kubectl/enter-command.md","mtime":"2018-05-29T07:40:15.275Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-05-29T07:41:38.641Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+

@@ -4,11 +4,11 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>Introduction · GitBook</title>
+        <title>Introduction · k8s 相关源码分析</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
-        
+        <meta name="author" content="rootdeep <zhiguo.lee@foxmail.com>">
         
         
     
@@ -57,7 +57,7 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="chapter1/" />
+    <link rel="next" href="kubectl/" />
     
     
 
@@ -80,7 +80,16 @@
 <ul class="summary">
     
     
+    
+        
+        <li>
+            <a href="http://rootdeep.github.io" target="_blank" class="custom-link">rootdeep</a>
+        </li>
+    
+    
 
+    
+    <li class="divider"></li>
     
 
     
@@ -100,12 +109,12 @@
             
         </li>
     
-        <li class="chapter " data-level="1.2" data-path="chapter1/">
+        <li class="chapter " data-level="1.2" data-path="kubectl/">
             
-                <a href="chapter1/">
+                <a href="kubectl/">
             
                     
-                    Chapter1
+                    kubectl  
             
                 </a>
             
@@ -114,12 +123,12 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.2.1" data-path="chapter1/section1.1.html">
+        <li class="chapter " data-level="1.2.1" data-path="kubectl/enter-command.html">
             
-                <a href="chapter1/section1.1.html">
+                <a href="kubectl/enter-command.html">
             
                     
-                    Section1.1
+                    进入命令
             
                 </a>
             
@@ -127,12 +136,38 @@
             
         </li>
     
-        <li class="chapter " data-level="1.2.2" data-path="chapter1/section1.2.html">
+        <li class="chapter " data-level="1.2.2" data-path="kubectl/construct-visitor.html">
             
-                <a href="chapter1/section1.2.html">
+                <a href="kubectl/construct-visitor.html">
             
                     
-                    Section1.2
+                    Visitor 实例构建
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="kubectl/run-visit.html">
+            
+                <a href="kubectl/run-visit.html">
+            
+                    
+                    Visit 方法执行
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="kubectl/info-generation.html">
+            
+                <a href="kubectl/info-generation.html">
+            
+                    
+                    info 实例生成
             
                 </a>
             
@@ -145,14 +180,14 @@
             
         </li>
     
-        <li class="chapter " data-level="1.3" data-path="chapter2/">
+        <li class="chapter " data-level="1.3" >
             
-                <a href="chapter2/">
+                <span>
             
                     
-                    Chapter2
+                    kube-apiserver
             
-                </a>
+                </span>
             
 
             
@@ -203,7 +238,7 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="introduction">Introduction</h1>
+                                <p>K8s &#x6E90;&#x7801;&#x5B66;&#x4E60;&#x7B14;&#x8BB0;</p>
 
                                 
                                 </section>
@@ -232,7 +267,7 @@
             
                 
                 
-                <a href="chapter1/" class="navigation navigation-next navigation-unique" aria-label="Next page: Chapter1">
+                <a href="kubectl/" class="navigation navigation-next navigation-unique" aria-label="Next page: kubectl  ">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -243,7 +278,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Introduction","level":"1.1","depth":1,"next":{"title":"Chapter1","level":"1.2","depth":1,"path":"chapter1/README.md","ref":"chapter1/README.md","articles":[{"title":"Section1.1","level":"1.2.1","depth":2,"path":"chapter1/section1.1.md","ref":"chapter1/section1.1.md","articles":[]},{"title":"Section1.2","level":"1.2.2","depth":2,"path":"chapter1/section1.2.md","ref":"chapter1/section1.2.md","articles":[]}]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["livereload"],"pluginsConfig":{"livereload":{},"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"README.md","mtime":"2018-05-15T06:37:08.254Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-05-15T06:41:27.060Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Introduction","level":"1.1","depth":1,"next":{"title":"kubectl  ","level":"1.2","depth":1,"path":"kubectl/README.md","ref":"kubectl/README.md","articles":[{"title":"进入命令","level":"1.2.1","depth":2,"path":"kubectl/enter-command.md","ref":"kubectl/enter-command.md","articles":[]},{"title":"Visitor 实例构建","level":"1.2.2","depth":2,"path":"kubectl/construct-visitor.md","ref":"kubectl/construct-visitor.md","articles":[]},{"title":"Visit 方法执行","level":"1.2.3","depth":2,"path":"kubectl/run-visit.md","ref":"kubectl/run-visit.md","articles":[]},{"title":"info 实例生成","level":"1.2.4","depth":2,"path":"kubectl/info-generation.md","ref":"kubectl/info-generation.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":[],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"rootdeep <zhiguo.lee@foxmail.com>","pdf":{"pageBreaksBefore":"/","headerTemplate":null,"paperSize":"a4","margin":{"right":62,"left":62,"top":36,"bottom":36},"fontSize":12,"fontFamily":"Arial","footerTemplate":null,"chapterMark":"pagebreak","pageNumbers":false},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"k8s 相关源码分析","links":{"sidebar":{"rootdeep":"http://rootdeep.github.io"}},"gitbook":"*","description":"This is a sample book created by gitbook","extension":null},"file":{"path":"README.md","mtime":"2018-05-29T07:20:25.181Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-05-29T07:41:38.641Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
@@ -251,10 +286,6 @@
         
     <script src="gitbook/gitbook.js"></script>
     <script src="gitbook/theme.js"></script>
-    
-        
-        <script src="gitbook/gitbook-plugin-livereload/plugin.js"></script>
-        
     
         
         <script src="gitbook/gitbook-plugin-search/search-engine.js"></script>

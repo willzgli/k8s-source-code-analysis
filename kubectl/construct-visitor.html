@@ -1,0 +1,580 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>Visitor 实例构建 · k8s 相关源码分析</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="rootdeep <zhiguo.lee@foxmail.com>">
+        
+        
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="run-visit.html" />
+    
+    
+    <link rel="prev" href="enter-command.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="http://rootdeep.github.io" target="_blank" class="custom-link">rootdeep</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    kubectl  
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="enter-command.html">
+            
+                <a href="enter-command.html">
+            
+                    
+                    进入命令
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.2.2" data-path="construct-visitor.html">
+            
+                <a href="construct-visitor.html">
+            
+                    
+                    Visitor 实例构建
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="run-visit.html">
+            
+                <a href="run-visit.html">
+            
+                    
+                    Visit 方法执行
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="info-generation.html">
+            
+                <a href="info-generation.html">
+            
+                    
+                    info 实例生成
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" >
+            
+                <span>
+            
+                    
+                    kube-apiserver
+            
+                </span>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >Visitor 实例构建</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="visitor&#x5B9E;&#x4F8B;&#x6784;&#x5EFA;"><strong>Visitor&#x5B9E;&#x4F8B;&#x6784;&#x5EFA;</strong></h1>
+<p><strong>Builder&#x5B9E;&#x4F8B;&#x521D;&#x59CB;&#x5316;&#x53CA;&#x5904;&#x7406;</strong></p>
+<p>Builder &#x7ED3;&#x6784;&#x4F53;&#x4FDD;&#x5B58;&#x4E86;&#x4ECE;&#x547D;&#x4EE4;&#x884C;&#x83B7;&#x53D6;&#x7684;&#x5404;&#x79CD;&#x53C2;&#x6570;&#xFF0C;&#x4EE5;&#x53CA;&#x5B83;&#x5B9E;&#x73B0;&#x4E86;&#x5404;&#x79CD;&#x51FD;&#x6570;&#x7528;&#x4E8E;&#x5904;&#x7406;&#x8FD9;&#x4E9B;&#x53C2;&#x6570; &#x5E76;&#x5C06;&#x5176;&#x8F6C;&#x6362;&#x4E3A;&#x4E00;&#x7CFB;&#x5217;&#x7684;resources&#xFF0C;&#x6700;&#x7EC8;&#x7528;Visitor &#x65B9;&#x6CD5;&#x8FED;&#x4EE3;&#x5904;&#x7406;resource&#x3002;</p>
+<p>pkg/kubectl/cmd/util/factory_object_mapping.go</p>
+<pre><code>func (f *ring2Factory) NewBuilder() *resource.Builder {
+    clientMapperFunc := resource.ClientMapperFunc(f.objectMappingFactory.ClientForMapping)
+    mapper, typer := f.objectMappingFactory.Object()
+
+    unstructuredClientMapperFunc := resource.ClientMapperFunc(f.objectMappingFactory.UnstructuredClientForMapping)
+
+    categoryExpander := f.objectMappingFactory.CategoryExpander()
+
+    return resource.NewBuilder(...) 
+}
+</code></pre><p>&#x5148;&#x770B;<code>f.objectMappingFactory.Object()</code> &#x8C03;&#x7528;&#x3002;&#x524D;&#x8FB9;&#x8BF4;&#x5230;&#x53D8;&#x91CF;objectMappingFactory &#x662F;&#x4E00;&#x4E2A;ring1Factory &#x7ED3;&#x6784;&#x4F53;&#x5B9E;&#x4F8B;&#x3002;&#x63A5;&#x4E0B;&#x6765;&#x770B;&#x4E00;&#x4E0B;ring1Factory() &#x7684;&#x65B9;&#x6CD5;Object()&#x7684;&#x5B9E;&#x73B0;&#x3002;</p>
+<p>pkg/kubectl/cmd/util/factory_object_mapping.go</p>
+<pre><code>func (f *ring1Factory) Object() (meta.RESTMapper, runtime.ObjectTyper) {
+    return meta.NewLazyObjectLoader(f.objectLoader)
+}
+</code></pre><p>&#x987A;&#x85E4;&#x6478;&#x74DC;&#xFF0C;&#x518D;&#x770B; meta.NewLazyObjectLoader() &#x65B9;&#x6CD5;&#x3002;</p>
+<p>staging/src/k8s.io/apimachinery/pkg/api/meta/lazy.go</p>
+<pre><code>func NewLazyObjectLoader(fn func() (RESTMapper, runtime.ObjectTyper, error)) (RESTMapper, runtime.ObjectTyper) {
+    obj := &amp;lazyObject{loader: fn}
+    return obj, obj
+}
+</code></pre><p>&#x770B;&#x5230;&#x6B64;&#xFF0C;&#x4FBF;&#x660E;&#x767D;&#x4E86;<code>mapper, typer := f.objectMappingFactory.Object()</code> &#x8BE5;&#x6761;&#x8BED;&#x53E5;&#x7684;&#x8FD4;&#x56DE;&#x503C;mapper, typer &#x63A5;&#x6536;&#x7684;&#x662F;&#x4E24;&#x4E2A;&#x540C;&#x6837;&#x7684;&#x53D8;&#x91CF;obj&#x3002; &#x4E24;&#x6B65;&#x4E0D;&#x540C;&#x7C7B;&#x578B;&#x7684;&#x8FD4;&#x56DE;&#x503C;&#x58F0;&#x660E;(RESTMapper&#xFF0C;runtime.ObjectTyper)&#x4E3A;&#x4EC0;&#x4E48;&#x63A5;&#x6536;&#x662F;&#x540C;&#x6837;&#x7C7B;&#x578B;&#x53D8;&#x91CF;&#x5462;&#xFF1F;&#x518D;&#x6DF1;&#x5165;&#x770B;&#x4E0B;&#x53BB;&#x4FBF;&#x5F97;&#x77E5;&#xFF1A;</p>
+<ol>
+<li><p>RESTMapper&#xFF0C;runtime.ObjectTyper &#x662F;&#x4E24;&#x4E2A;&#x63A5;&#x53E3;&#x7C7B;&#x578B;&#xFF0C;&#x5B83;&#x4EEC;&#x7684;&#x5B9A;&#x4E49;&#x5206;&#x522B;&#x4F4D;&#x4E8E;</p>
+<p>k8s.io/apimachinery/pkg/api/meta/interfaces.go &#x4E2D;&#x548C;k8s.io/apimachinery/pkg/runtime/interfaces.g&#x4E2D;&#x3002;</p>
+</li>
+<li><p>lazyObject &#x8FD9;&#x4E2A;&#x7ED3;&#x6784;&#x4F53;&#x5BF9;&#x8C61;&#x5B9E;&#x73B0;&#x4E86;&#x4E0A;&#x8FF0;&#x4E24;&#x4E2A;&#x63A5;&#x53E3;&#x4E2D;&#x7684;&#x65B9;&#x6CD5;&#x3002;</p>
+</li>
+</ol>
+<p>&#x4E0A;&#x8FF0;&#x8FD4;&#x56DE;&#x53D8;&#x91CF;&#x7684;&#x65B9;&#x5F0F;&#x7B97;&#x662F;go &#x8BED;&#x8A00;&#x7684;&#x7279;&#x6027;&#x4E86;&#x3002;&#x770B;&#x5B8C;&#x4E0A;&#x8FB9;&#x7684;&#x4EE3;&#x7801;&#xFF0C;&#x9700;&#x8981;&#x8BB0;&#x4F4F;&#x7684;&#x662F;</p>
+<ol>
+<li>mapper, typer &#x7684;&#x5B9E;&#x9645;&#x662F;&#x4E00;&#x4E2A;lazyObject &#x7ED3;&#x6784;&#x4F53;&#x5B9E;&#x4F8B;&#x3002;</li>
+<li>lazyObject &#x7ED3;&#x6784;&#x4F53;&#x5B9E;&#x4F8B; &#x7684;loader &#x5C5E;&#x6027;&#x662F;&#x65B9;&#x6CD5;<code>func (f *ring1Factory) objectLoader() (meta.RESTMapper, runtime.ObjectTyper, error)</code> &#x7684;&#x5F15;&#x7528;&#x3002;</li>
+</ol>
+<p>&#x56DE;&#x5230;Newbuilder() &#x65B9;&#x6CD5;&#xFF0C;&#x518D;&#x770B;clientMapperFunc&#xFF0C;unstructuredClientMapperFunc &#x662F;&#x5982;&#x4F55;&#x5F97;&#x5230;&#x8FD4;&#x56DE;&#x503C;&#x7684;&#x3002;&#x770B;&#x4E0B;&#x76F8;&#x5173;&#x7684;&#x4EE3;&#x7801;&#x5B9E;&#x73B0;&#xFF1A;</p>
+<pre><code>type ClientMapper interface {
+    ClientForMapping(mapping *meta.RESTMapping) (RESTClient, error)
+}
+// ClientMapperFunc implements ClientMapper for a function
+type ClientMapperFunc func(mapping *meta.RESTMapping) (RESTClient, error)
+
+func (f ClientMapperFunc) ClientForMapping(mapping *meta.RESTMapping) (RESTClient, error) {
+    return f(mapping)
+}
+</code></pre><p>&#x4EE5;&#x4E0A;&#x4EE3;&#x7801;&#x5C31;&#x662F;&#x5B9E;&#x73B0;&#x4E86;&#x63A5;&#x53E3;ClientMapper&#x3002;&#x8FD4;&#x56DE;&#x503C;<code>f(mapping)</code>  &#x4EE3;&#x8868;&#x4E86;&#x4E00;&#x4E2A;&#x4F20;&#x5165;&#x5B9E;&#x9645;&#x53C2;&#x6570;&#x540E;&#x51FD;&#x6570; f &#x5728;&#x5185;&#x5B58;&#x7684;&#x5730;&#x5740;&#x5F15;&#x7528;&#x3002;</p>
+<p>&#x6839;&#x636E;&#x4F20;&#x5165;ClientForMapping&#x7684;&#x53C2;&#x6570;&#x503C;&#xFF0C;&#x5F97;&#x77E5; </p>
+<ol>
+<li>clientMapperFunc&#xFF0C;unstructuredClientMapperFunc &#x662F;&#x4E24;&#x4E2A;&#x51FD;&#x6570;&#xFF0C;&#x5176;&#x51FD;&#x6570;&#x7C7B;&#x578B;&#x5B9A;&#x4E49;&#x662F;&#xFF1A;type ClientMapperFunc func(mapping *meta.RESTMapping) (RESTClient, error)</li>
+<li>clientMapperFunc &#x63A5;&#x6536;&#x7684;&#x51FD;&#x6570;&#x662F;&#xFF1A;f.objectMappingFactory.ClientForMapping</li>
+<li>unstructuredClientMapperFunc &#x63A5;&#x6536;&#x7684;&#x51FD;&#x6570;&#x662F;&#xFF1A;f.objectMappingFactory.UnstructuredClientForMapping</li>
+</ol>
+<p>&#x6700;&#x7EC8;&#xFF0C;Newbuilder() &#x65B9;&#x6CD5;&#x5185;&#x8C03;&#x7528;resource.NewBuilder()  &#x5305;&#x88C5;&#x4E00;&#x4E2A;Builder &#x7ED3;&#x6784;&#x4F53;&#x5B9E;&#x4F8B;&#x4F5C;&#x4E3A;&#x8FD4;&#x56DE;&#x503C;&#x3002;&#x901A;&#x8FC7;&#x4E0A;&#x8FF0;&#x5206;&#x6790;&#xFF0C;&#x5B9E;&#x4F8B;&#x5316;&#x8FC7;&#x7A0B;&#x76F4;&#x63A5;&#x8868;&#x8FBE;&#x5982;&#x4E0B;&#xFF1A;</p>
+<pre><code>resource.NewBuilder(
+   &amp;Builder{
+     internal: &amp;resource.Mapper{
+        RESTMapper:   mapper,  // lazyObject &#x7ED3;&#x6784;&#x4F53;&#x5B9E;&#x4F8B;
+        ObjectTyper:  typer,   // lazyObject &#x7ED3;&#x6784;&#x4F53;&#x5B9E;&#x4F8B;
+         //f.objectMappingFactory.ClientForMapping()&#x65B9;&#x6CD5;
+        ClientMapper: clientMapperFunc,  
+        //Decoder&#x7684;&#x8D4B;&#x503C;&#x8FC7;&#x7A0B;&#x51FD;&#x6570;&#x8C03;&#x7528;&#x592A;&#x6DF1;&#x3002;&#x3002;&#x3002;&#x60F3;&#x5410;
+        Decoder:      f.clientAccessFactory.Decoder(true),
+     },
+
+     unstructured: &amp;resource.Mapper{
+        RESTMapper:   mapper,  // lazyObject &#x7ED3;&#x6784;&#x4F53;&#x5B9E;&#x4F8B;
+        ObjectTyper:  typer,   // lazyObject &#x7ED3;&#x6784;&#x4F53;&#x5B9E;&#x4F8B;    
+        //f.objectMappingFactory.UnstructuredClientForMapping() &#x65B9;&#x6CD5;
+        ClientMapper: unstructuredClientMapperFunc,  
+        /* UnstructuredJSONScheme&#x7ED3;&#x6784;&#x4F53;&#xFF0C;&#x6709;&#x7528;Decode&#x3001;Encode&#x3001;decode&#x3001;encode &#x7B49;&#x591A;&#x4E2A;&#x5B9E;&#x4F8B;&#x65B9;&#x6CD5;
+        &#x7ED3;&#x6784;&#x4F53;&#x5177;&#x4F53;&#x58F0;&#x660E;&#x4F4D;&#x4E8E;k8s.io/apimachinery/pkg/apis/meta/v1/unstructed.go */
+        Decoder:      unstructured.UnstructuredJSONScheme 
+        },
+
+     categoryExpander: categoryExpander,
+     requireObject:    true,
+    }
+&#xFF09;
+</code></pre><p>&#x9700;&#x8981;&#x8BB0;&#x4F4F;&#x7684;&#x662F;&#xFF1A; Builder &#x7ED3;&#x6784;&#x4F53;&#x5B9E;&#x4F8B;&#x4E2D;&#x7684;&#x5C5E;&#x6027;internal, unstructured &#x5747;&#x662F;&#x4E00;&#x4E2A; resource.Mapper &#x7ED3;&#x6784;&#x4F53;&#x3002;</p>
+<p>&#x81F3;&#x6B64;&#xFF0C;&#x6211;&#x4EEC;&#x5927;&#x6982;&#x5206;&#x6790;&#x4E86;RunCreate()&#x51FD;&#x6570;&#x4E2D;&#x8C03;&#x7528;f.NewBuilder() &#x521D;&#x59CB;&#x5316;&#x4E00;&#x4E2A;Builder &#x5B9E;&#x4F8B;&#x7684;&#x8FC7;&#x7A0B;&#xFF0C;&#x5E76;&#x4E14;&#x4E0A;&#x8FB9;&#x7684;&#x521D;&#x59CB;&#x5316;&#x8FC7;&#x7A0B;&#x53EA;&#x662F;&#x5BF9;&#x7ED3;&#x6784;&#x4F53;&#x90E8;&#x5206;&#x5C5E;&#x6027;&#x7684;&#x521D;&#x59CB;&#x5316;&#xFF0C;&#x63A5;&#x4E0B;&#x6765;&#x5C31;&#x662F;&#x8C03;&#x7528;Unstructured()&#x7B49;&#x65B9;&#x6CD5;&#x5BF9;builder &#x5B9E;&#x4F8B;&#x7684;&#x5C5E;&#x6027;&#x503C;&#x8FDB;&#x884C;&#x8BBE;&#x7F6E;&#x6216;&#x4FEE;&#x6539; &#x3002;</p>
+<p><strong>Visitor &#x7684;&#x6784;&#x5EFA;</strong>&#x3002;</p>
+<p>r &#x7684;&#x6784;&#x5EFA;&#x8DDF;builder&#x5C5E;&#x6027;&#x76F8;&#x5173;&#xFF0C;&#x4F9D;&#x6B21;&#x8FC7;&#x4E00;&#x4E0B;&#x5904;&#x7406;Builder&#x5B9E;&#x4F8B;&#x7684;&#x51FD;&#x6570;&#x6D41;</p>
+<ol>
+<li>Unstructured() : &#x5BF9;b.mapper &#x8D4B;&#x503C;&#xFF0C;b.mapper = unstructured</li>
+<li>Schema()&#xFF1A; &#x5BF9;b.schema &#x8D4B;&#x503C;&#xFF0C;b.schema = schema</li>
+<li>ContinueOnError():  b.continueOnError &#x7F6E;&#x4E3A;true&#x3002; &#x610F;&#x4E3A;&#x9047;&#x5230;&#x6709;&#x9519;&#x8BEF;&#x7684;&#x8D44;&#x6E90;&#x4E5F;&#x4E0D;&#x9A6C;&#x4E0A;&#x8FD4;&#x56DE;&#xFF0C;&#x8DF3;&#x8FC7;&#x9519;&#x8BEF;&#xFF0C;&#x7EE7;&#x7EED;&#x5904;&#x7406;&#x4E0B;&#x4E00;&#x4E2A;&#x8D44;&#x6E90;</li>
+<li>NamespaceParam(cmdNamespace)&#xFF1A;b.namespace = cmdNamespace</li>
+<li>DefaultNamespace():  b.defaultNamespace &#x7F6E;&#x4E3A;true</li>
+<li>FilenameParam(enforceNamespace, &amp;options.FilenameOptions) : &#x540E;&#x8FB9;&#x8BE6;&#x7EC6;&#x8BF4;</li>
+<li>LabelSelectorParam(options.Selector)&#xFF1A;&#x5BF9; b.labelSelector&#x8FDB;&#x884C;&#x8D4B;&#x503C;</li>
+<li>Flatten(): b.flatten  &#x7F6E;&#x4E3A;true,</li>
+<li>Do()&#xFF1A;&#x540E;&#x8FB9;&#x8BE6;&#x7EC6;&#x8BF4;</li>
+</ol>
+<p>&#x518D;&#x770B;visitorResult &#x4E2D; &#x5BF9; r &#x7684;&#x521D;&#x59CB;&#x5316;&#xFF0C;&#x8C03;&#x7528;&#x5230;FilenameParam() &#x65B9;&#x6CD5;&#x65F6;&#xFF0C;&#x7B2C;&#x4E00;&#x6B21;&#x770B;&#x5230;&#x5BF9;visitor &#x7684;&#x6784;&#x5EFA;&#x3002;</p>
+<p>pkg/kubectl/resoure/builder.go</p>
+<pre><code>func (b *Builder) FilenameParam(enforceNamespace bool, filenameOptions *FilenameOptions) *Builder {
+    recursive := filenameOptions.Recursive
+    paths := filenameOptions.Filenames
+    for _, s := range paths {
+        switch {
+        case s == &quot;-&quot;:  // &#x4F7F;&#x7528;&#x672C;&#x5730;yaml&#x6587;&#x4EF6;&#x521B;&#x5EFA;&#x8D44;
+            b.Stdin()  // b.stream &#x7F6E;&#x4E3A;true &#x66F4;&#x65B0;b.paths &#x5217;&#x8868;,&#x6DFB;&#x52A0;FileVisitorForSTDIN &#x7C7B;&#x578B;visitor 
+
+        // &#x4F7F;&#x7528;&#x7F51;&#x7EDC;&#x6587;&#x4EF6;&#x521B;&#x5EFA;&#x8D44;&#x6E90;
+        case strings.Index(s, &quot;http://&quot;) == 0 || strings.Index(s, &quot;https://&quot;) == 0:
+            url, err := url.Parse(s)
+            if err != nil {
+                b.errs = append(b.errs, fmt.Errorf(&quot;the URL passed to filename %q is not   
+                                valid: %v&quot;, s, err))
+                continue
+            }
+            //&#x66F4;&#x65B0;b.paths &#x5217;&#x8868;,&#x6DFB;&#x52A0;URLVisitor&#x7C7B;&#x578B;visitor 
+            b.URL(defaultHttpGetAttempts, url)
+        default:
+            if !recursive {
+                b.singleItemImplied = true
+            }
+
+            // &#x4F7F;&#x7528;Declarative Management &#x65B9;&#x6CD5;&#x521B;&#x5EFA;&#x5BF9;&#x8C61;&#x8D70;&#x6B64;&#x8DEF;&#x5F84;
+            b.Path(recursive, s)  
+        }
+    }
+
+    if enforceNamespace { // &#x4E00;&#x822C;&#x4E3A;true 
+        /*&#x5C06;b.requereNamepace &#x7F6E;&#x4E3A; true, &#x5BF9;&#x7F3A;&#x7701;&#x547D;&#x4EE4;&#x7A7A;&#x95F4;&#x7684;&#x8D44;&#x6E90;&#x4F7F;&#x7528;cmdNamepace &#x6216;&#x68C0;&#x67E5;&#x8D44;&#x6E90;&#x6587;&#x4EF6;&#x4E2D;   
+          namespace&#x540D;&#x5B57;&#x4E0E;&#x547D;&#x4EE4;&#x884C;&#x4E2D;&#x6307;&#x5B9A;&#x7684;namespace &#x662F;&#x5426;&#x4E00;&#x81F4;*/
+        b.RequireNamespace()  
+    }
+    return b
+}
+</code></pre><p>&#x6CE8;&#x610F;&#x5230;&#x4F7F;&#x7528;create -f xxx.json &#x547D;&#x4EE4;&#x65F6;&#xFF0C;&#x4F1A;&#x8FDB;&#x5165;case 1 &#xFF0C;&#x5373;&#x8C03;&#x7528;b.Stdin() &#x65B9;&#x6CD5;&#x3002;&#x6700;&#x540E;&#xFF0C;b.paths &#x7684;&#x7ED3;&#x679C;&#x662F;&#x3002;</p>
+<pre><code>b.paths=[&amp;FileVisitor{
+           Path: constSTDINstr,
+           *StreamVisitor: &amp;StreamVisitor{  //&#x8F93;&#x5165;&#x6D41;
+                              Reader: nil,
+                              Mapper: b.mapper (b.unstructured)
+                              Source: consSTDINstr,
+                              Schema: schema,
+                         },
+         }&#xFF0C;
+       ]
+</code></pre><p>&#x904D;&#x5386;&#x4E0A;&#x8FB9;&#x5BF9;Builder &#x5904;&#x7406;&#x65B9;&#x6CD5;&#xFF0C;&#x5BF9;visitor &#x6709;&#x5F71;&#x54CD;&#x5C31;&#x662F;FilenameParam() &#x51FD;&#x6570;&#xFF0C;&#x63A5;&#x7740;&#x5C31;&#x662F;&#x5230;Do() &#x65B9;&#x6CD5;&#x4E2D;&#x91CD;&#x5851;visitor&#x3002;</p>
+<p>Do() &#x65B9;&#x6CD5;&#x5177;&#x4F53;&#x5B9E;&#x73B0;&#x5982;&#x4E0B;&#xFF1A;</p>
+<p>pkg/kubectl/resoure/builder.go</p>
+<pre><code>func (b *Builder) Do() *Result {
+    r := b.visitorResult()  // &#x7B2C;&#x4E00;&#x6B21;&#x751F;&#x6210; result &#x5B9E;&#x4F8B;&#xFF0C;&#x521D;&#x59CB;&#x5316;r.visitor&#x7684;&#x503C;
+    r.mapper = b.Mapper()
+    if r.err != nil {
+        return r    // &#x7B2C;&#x4E00;&#x5904;return&#xFF0C;&#x51FA;&#x9519;&#x65F6;&#xFF0C;&#x4ECE;&#x6B64;&#x5904;&#x8FD4;&#x56DE;
+    }
+    if b.flatten {  // &#x9ED8;&#x8BA4;&#x4E3A;true, &#x5728;b.Flatten() &#x4E2D;&#x8D4B;&#x503C;
+        r.visitor = NewFlattenListVisitor(r.visitor, b.mapper) //&#x7B2C;&#x4E00;&#x6B21;&#x4FEE;&#x6539;r.visitor 
+    }
+    helpers := []VisitorFunc{}
+    if b.defaultNamespace {// &#x9ED8;&#x8BA4;&#x4E3A;true, &#x5728;b.DefaultNamespace() &#x8D4B;&#x503C;
+        helpers = append(helpers, SetNamespace(b.namespace))
+    }
+    if b.requireNamespace { // &#x5728;FileFilenameParam() &#x8D4B;&#x503C;&#x4E3A;true
+        /* b.namespace &#x5373;RunCreate() &#x4E2D;&#x7684;cmdNamespace&#xFF0C;cmdNamespace &#x7684;&#x503C;&#x4E3A; kubectl &#x547D;&#x4EE4;&#x4E2D;-- 
+          namespace &#x53C2;&#x6570;&#x7684;&#x503C;*/
+        helpers = append(helpers, RequireNamespace(b.namespace))
+    }
+    helpers = append(helpers, FilterNamespace)
+    if b.requireObject {  // &#x9ED8;&#x8BA4;&#x4E3A;true&#xFF0C;&#x5728;builder &#x7ED3;&#x6784;&#x4F53;&#x521D;&#x59CB;&#x5316;&#x4E2D;&#x8D4B;&#x503C;
+        helpers = append(helpers, RetrieveLazy)
+    }
+    r.visitor = NewDecoratedVisitor(r.visitor, helpers...)  //  &#x7B2C;&#x4E8C;&#x6B21;&#x4FEE;&#x6539;r.visitor
+    if b.continueOnError {
+        r.visitor = ContinueOnErrorVisitor{r.visitor}
+    }
+    return r  //&#x7B2C;&#x4E8C;&#x5904;return&#xFF0C;&#x4E00;&#x822C;&#x4ECE;&#x6B64;&#x5904;&#x8FD4;&#x56DE;&#x3002;
+}
+</code></pre><p>pkg/kubectl/resoure/visitor.go</p>
+<pre><code>func (b *Builder) visitorResult() *Result {
+    if len(b.errs) &gt; 0 {  
+        //&#x8FD4;&#x56DE;&#x4E00;&#xFF0C;&#x9519;&#x8BEF;&#x8FD4;&#x56DE;&#xFF0C;b.errs &#x4E3A;&#x4E00;&#x5217;&#x8868;&#x7ED3;&#x6784;&#xFF0C;&#x5217;&#x8868;&#x957F;&#x5EA6;&#x5927;&#x4E8E;0&#xFF0C;&#x8BF4;&#x660E;&#x4E4B;&#x524D;&#x6709;&#x9519;&#x8BEF;&#x53D1;&#x751F;&#xFF0C;&#x5728;&#x6B64;&#x8FD4;&#x56DE;&#x3002;
+        return &amp;Result{err: utilerrors.NewAggregate(b.errs)}
+    }
+    if b.selectAll { // create &#x547D;&#x4EE4;&#x4E2D;&#xFF0C;b.selectAll &#x4E3A;false 
+        selector := labels.Everything().String()
+        b.labelSelector = &amp;selector
+    }
+
+    /* create &#x547D;&#x4EE4;&#x8FDB;&#x5165;&#x6B64;&#x5206;&#x652F;&#xFF0C;&#x4F8B;&#x5982; kubectl create -f xxx.yaml(&#x6216;&#x8005;URL/xxx.yaml)*/
+    if len(b.paths) != 0 {
+        return b.visitByPaths()  //&#x8FD4;&#x56DE;&#x4E8C;
+    }
+
+    // visit selectors
+    if b.labelSelector != nil || b.fieldSelector != nil {
+        return b.visitBySelector() // &#x8FD4;&#x56DE;&#x4E09;
+    }
+
+    // visit items specified by resource and name
+    if len(b.resourceTuples) != 0 {
+        return b.visitByResource()
+    }
+
+    // get &#x67D0;&#x4E00;&#x4E2A;&#x6307;&#x5B9A;&#x8D44;&#x6E90;&#x5BF9;&#x8C61;&#x65F6;&#xFF0C;&#x8FDB;&#x5165;&#x6B64;&#x5206;&#x652F;
+    if len(b.names) != 0 {
+        return b.visitByName()  // &#x8FD4;&#x56DE;&#x56DB;
+    }
+
+    if len(b.resources) != 0 {
+        return &amp;Result{err: fmt.Errorf(&quot;resource(s) were provided, but no name, label selector, or --all flag specified&quot;)}
+    }
+    return &amp;Result{err: missingResourceError}
+}
+</code></pre><p>&#x8FDB;&#x5165;create &#x547D;&#x4EE4;&#x8BE5;&#x8D70;&#x7684;&#x5206;&#x652F;&#xFF0C;&#x7EE7;&#x7EED;&#x770B; visitByPaths() &#x51FD;&#x6570;</p>
+<p>pkg/kubectl/resoure/visitor.go</p>
+<pre><code>func (b *Builder) visitByPaths() *Result {
+    result := &amp;Result{
+        singleItemImplied:  !b.dir &amp;&amp; !b.stream &amp;&amp; len(b.paths) == 1, // &#x7ED3;&#x679C;&#x4E3A;False
+        targetsSingleItems: true,
+    }
+
+    ...
+    /*&#x9519;&#x8BEF;&#x5904;&#x7406;&#x4EE3;&#x7801;*/
+    ...
+
+    var visitors Visitor
+    if b.continueOnError { // &#x4E00;&#x822C;&#x4E3A;true
+    // EagerVisitorList &#x987E;&#x540D;&#x601D;&#x4E49;&#x5C31;&#x662F;(&#x8DF3;&#x8FC7;&#x9519;&#x8BEF;)&#x5C3D;&#x53EF;&#x80FD;&#x5904;&#x7406;&#x591A;&#x7684;&#x5904;&#x7406;&#x8D44;&#x6E90;&#x5BF9;&#x8C61;
+        visitors = EagerVisitorList(b.paths)// b.paths &#x88AB;&#x5305;&#x88C5;&#x4E3A; EagerVisitorList &#x7C7B;&#x578B;
+    } else {
+        visitors = VisitorList(b.paths)  // &#x9047;&#x5230;&#x9519;&#x8BEF;&#x5C31;&#x8FD4;&#x56DE;
+    }
+
+    // only items from disk can be refetched
+    if b.latest { // RunCreate() &#x4E2D; b.latest = false
+        // must flatten lists prior to fetching
+        if b.flatten {
+            visitors = NewFlattenListVisitor(visitors, b.mapper)
+        }
+        // must set namespace prior to fetching
+        if b.defaultNamespace {
+            visitors = NewDecoratedVisitor(visitors, SetNamespace(b.namespace))
+        }
+        visitors = NewDecoratedVisitor(visitors, RetrieveLatest)
+    }
+    if b.labelSelector != nil {  //RunCreate() &#x4E2D;&#xFF0C;b.labelSelector &#x6709;&#x53EF;&#x80FD;&#x80FD;&#x662F;true
+        selector, err := labels.Parse(*b.labelSelector)
+        if err != nil {
+            return result.withError(fmt.Errorf(&quot;the provided selector %q is not valid: %v&quot;, b.labelSelector, err))
+        }
+        // &#x5047;&#x5B9A;create&#x547D;&#x4EE4;&#x8FDB;&#x5165;&#x6B64;&#x8DEF;&#x5F84;&#xFF0C;visitor &#x88AB;&#x5305;&#x88C5;&#x4E3A;&#x4E00;&#x4E2A;FilteredVisitor &#x7C7B;&#x578B;
+        visitors = NewFilteredVisitor(visitors, FilterByLabelSelector(selector))
+    }
+    result.visitor = visitors  // &#x5230;&#x6B64;&#xFF0C;r.visitor  &#x4E3A;FilteredVisitor &#x7C7B;&#x578B;
+    result.sources = b.paths
+    return result  // &#x8FD4;&#x56DE;result &#x5230;Do() &#x65B9;&#x6CD5; 
+}
+</code></pre><p>&#x56DE;&#x5230;Do() &#x65B9;&#x6CD5;&#xFF0C;r.visitor &#x53C8;&#x4E24;&#x6B21;&#x88AB;&#x4FEE;&#x6539;&#x7C7B;&#x578B;&#x3002;&#x8FD9;&#x5C31;&#x662F;&#x6267;&#x884C;create &#x547D;&#x4EE4;&#x65F6;Do() &#x65B9;&#x6CD5;&#x4E2D; b.visitorResult() &#x7684;&#x6267;&#x884C;&#x8FC7;&#x7A0B;&#x3002;&#x68B3;&#x7406;visitor &#x7684;&#x53D8;&#x5316;&#x8FC7;&#x7A0B;&#x5927;&#x81F4;&#x5982;&#x4E0B;&#xFF1A;</p>
+<p><img src="../image/visit transition.png" alt="visit transition"></p>
+<p>&#x81F3;&#x6B64;&#xFF0C;r &#x53CA;visitor &#x5B9E;&#x4F8B;&#x7684;&#x751F;&#x6210;&#x7ED3;&#x675F;&#x3002;&#x4E0B;&#x6765;&#x53C8;&#x8BE5;&#x8FD4;&#x56DE;&#x5230;RunCreate() &#x51FD;&#x6570;&#x4E2D;&#xFF0C;&#x6267;&#x884C;r.visitor.Visit() &#x65B9;&#x6CD5;&#x4E86;&#x3002;</p>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="enter-command.html" class="navigation navigation-prev " aria-label="Previous page: 进入命令">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="run-visit.html" class="navigation navigation-next " aria-label="Next page: Visit 方法执行">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Visitor 实例构建","level":"1.2.2","depth":2,"next":{"title":"Visit 方法执行","level":"1.2.3","depth":2,"path":"kubectl/run-visit.md","ref":"kubectl/run-visit.md","articles":[]},"previous":{"title":"进入命令","level":"1.2.1","depth":2,"path":"kubectl/enter-command.md","ref":"kubectl/enter-command.md","articles":[]},"dir":"ltr"},"config":{"plugins":[],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"rootdeep <zhiguo.lee@foxmail.com>","pdf":{"pageBreaksBefore":"/","headerTemplate":null,"paperSize":"a4","margin":{"right":62,"left":62,"top":36,"bottom":36},"fontSize":12,"fontFamily":"Arial","footerTemplate":null,"chapterMark":"pagebreak","pageNumbers":false},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"k8s 相关源码分析","links":{"sidebar":{"rootdeep":"http://rootdeep.github.io"}},"gitbook":"*","description":"This is a sample book created by gitbook","extension":null},"file":{"path":"kubectl/construct-visitor.md","mtime":"2018-05-29T07:40:01.763Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-05-29T07:41:38.641Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+

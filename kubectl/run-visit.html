@@ -1,0 +1,548 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>Visit 方法执行 · k8s 相关源码分析</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="rootdeep <zhiguo.lee@foxmail.com>">
+        
+        
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="info-generation.html" />
+    
+    
+    <link rel="prev" href="construct-visitor.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="http://rootdeep.github.io" target="_blank" class="custom-link">rootdeep</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    kubectl  
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="enter-command.html">
+            
+                <a href="enter-command.html">
+            
+                    
+                    进入命令
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="construct-visitor.html">
+            
+                <a href="construct-visitor.html">
+            
+                    
+                    Visitor 实例构建
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.2.3" data-path="run-visit.html">
+            
+                <a href="run-visit.html">
+            
+                    
+                    Visit 方法执行
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="info-generation.html">
+            
+                <a href="info-generation.html">
+            
+                    
+                    info 实例生成
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" >
+            
+                <span>
+            
+                    
+                    kube-apiserver
+            
+                </span>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >Visit 方法执行</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="visit-&#x65B9;&#x6CD5;&#x6267;&#x884C;">Visit &#x65B9;&#x6CD5;&#x6267;&#x884C;</h1>
+<p>&#x4E0A;&#x8282;&#x5206;&#x6790;&#x4E86;create &#x547D;&#x4EE4;&#x4E2D;&#xFF0C;kubectl &#x4E2D;&#x91CD;&#x8981;&#x7684;&#x7ED3;&#x6784;&#x4F53; builder  &#x548C; visitor &#x7684;&#x5F62;&#x6210;&#x3002;&#x56DE;&#x5230;RunCreate()&#x51FD;&#x6570;&#x4E2D;&#xFF0C;&#x770B;&#x4E00;&#x4E0B;r.Visit() &#x7684;&#x8FD0;&#x884C;&#x3002;&#x5728;Visit &#x7684;&#x6267;&#x884C;&#x4E2D;&#xFF0C;&#x6211;&#x4EEC;&#x9700;&#x8981;&#x91CD;&#x70B9;&#x6CE8;&#x610F;&#x5404;&#x79CD;&#x533F;&#x540D;&#x51FD;&#x6570;&#x548C;info &#x53C2;&#x6570;&#x3002;</p>
+<p>info &#x53C2;&#x6570;&#x662F;&#x4E00;&#x4E2A;&#x7ED3;&#x6784;&#x4F53;&#xFF0C;&#x5177;&#x4F53;&#x58F0;&#x660E;&#x5982;&#x4E0B;</p>
+<pre><code>type Info struct {
+    Client RESTClient
+    Mapping *meta.RESTMapping
+    Namespace string
+    Name      string
+    Source string
+    Object runtime.Object
+    ResourceVersion string
+    Export bool
+}
+</code></pre><p>info &#x7684;&#x5177;&#x4F53;&#x8D4B;&#x503C;&#x8FC7;&#x7A0B;&#x5728;&#x540E;&#x8FB9;&#x7684;&#x4EE3;&#x7801;&#x770B;&#x5230;&#x4E86;&#x518D;&#x8BE6;&#x8BF4;&#x3002;</p>
+<p>&#x4F20;&#x5165;r.Visit()&#x7684;&#x53D8;&#x91CF;&#x662F;&#x4E00;&#x4E2A;&#x533F;&#x540D;&#x51FD;&#x6570;&#xFF0C;&#x6B64;&#x5904;&#xFF0C;&#x8BB0;&#x8BE5;&#x533F;&#x540D;&#x51FD;&#x6570;&#x540D;&#x5B57;&#x540D;&#x5B57;&#x4E3A;fn_ins0&#x3002;fn_ins0&#x7684;&#x5B9E;&#x73B0;&#x5982;&#x4E0B;&#xFF1A;</p>
+<pre><code>fn_ins0 =: func (info *resource.Info, err error) error { // info &#x53C2;&#x6570;
+    if err != nil {
+        return err
+    }
+    if err := kubectl.CreateOrUpdateAnnotation(cmdutil.GetFlagBool(cmd, cmdutil.ApplyAnnotationsFlag), info, cmdutil.InternalVersionJSONEncoder()); err != nil {
+        return cmdutil.AddSourceToErr(&quot;creating&quot;, info.Source, err)
+    }
+
+    if cmdutil.ShouldRecord(cmd, info) {
+        if err := cmdutil.RecordChangeCause(info.Object, f.Command(cmd, false)); err != nil {
+            return cmdutil.AddSourceToErr(&quot;creating&quot;, info.Source, err)
+        }
+    }
+
+    if !dryRun {
+        if err := createAndRefresh(info); err != nil {
+           return cmdutil.AddSourceToErr(&quot;creating&quot;, info.Source, err)
+        }
+    }
+
+    count++
+
+    shortOutput := output == &quot;name&quot;
+    if len(output) &gt; 0 &amp;&amp; !shortOutput {
+        return cmdutil.PrintObject(cmd,
+        info.Object, o.Out)
+    }
+
+    cmdutil.PrintSuccess(shortOutput, o.Out,
+    info.Object, dryRun, &quot;created&quot;)
+    return nil
+}
+</code></pre><p>&#x8FDB;&#x5165; r.Visit() &#x65B9;&#x6CD5; </p>
+<pre><code>func (r *Result) Visit(fn VisitorFunc) error {
+    if r.err != nil {
+        return r.err
+    }
+    //&#x6839;&#x636E;&#x4E0A;&#x8282;&#x7684;&#x5206;&#x6790;&#xFF0C;&#x6B64;&#x5904;&#x7684;Visit() &#x65B9;&#x6CD5;&#x662F;func (v ContinueOnErrorVisitor) Visit(fn VisitorFunc)
+    err := r.visitor.Visit(fn) // fn &#x5373; fn_ins0
+    return utilerrors.FilterOut(err, r.ignoreErrors...)
+}
+</code></pre><p><strong>&#x8FDB;&#x5165;ContinueOnErrorVisitor &#x7C7B;</strong></p>
+<hr>
+<p>pkg/kubectl/resource/visitor.go</p>
+<pre><code>func (v ContinueOnErrorVisitor) Visit(fn VisitorFunc) error {// fn &#x4E3A;fn_ins0
+    errs := []error{}
+    err := v.Visitor.Visit(fn_ins1) // Visitor&#x4E3A;DecoratedVisitor &#x5B9E;&#x4F8B;&#xFF0C;&#x53C2;&#x6570;&#x4E3A;&#x533F;&#x540D;&#x51FD;&#x6570;&#xFF0C;&#x8BB0;&#x4E3A;fn_ins1
+    if err != nil {
+        errs = append(errs, err)
+    }
+    if len(errs) == 1 {
+        return errs[0]
+    }
+    return utilerrors.NewAggregate(errs)
+}
+</code></pre><p>&#x533F;&#x540D;&#x51FD;&#x6570;fn_ins1 &#x7684;&#x5B9E;&#x73B0;&#x4E3A;&#xFF1A;</p>
+<pre><code>fn_ins1=func(info *Info, err error) error { // info &#x53C2;&#x6570;&#x4F20;&#x7ED9;fn_ins0
+        if err != nil {
+            errs = append(errs, err)
+            return nil
+        }
+        if err := fn(info, nil); err != nil {  // &#x6700;&#x4E0A;&#x5C42;&#x7684;&#x533F;&#x540D;&#x51FD;&#x6570;fn_ins0
+            errs = append(errs, err)
+        }
+        return nil
+    }
+</code></pre><p><strong>&#x8FDB;&#x5165;DecoratedVisitor&#x7C7B;</strong></p>
+<hr>
+<pre><code>func (v DecoratedVisitor) Visit(fn VisitorFunc) error { // &#x63A5;&#x6536;fn_ins1
+    return v.visitor.Visit(fn_ins2) // visitor &#x4E3A; NewFlattenListVisitor
+}
+</code></pre><p>&#x533F;&#x540D;&#x51FD;&#x6570;fn_ins2 &#x5B9E;&#x73B0;</p>
+<pre><code>fn_ins2=func(info *Info, err error) error { //info &#x53C2;&#x6570;&#x4F20;&#x7ED9;fn_ins1
+        if err != nil {
+            return err
+        }
+        for i := range v.decorators { // v &#x5373;DecoratedVisitor&#xFF0C;&#x904D;&#x5386;helper &#x51FD;&#x6570;
+            if err := v.decorators[i](info, nil); err != nil { // &#x4F7F;&#x7528;helper &#x5904;&#x7406;info 
+                return err
+            }
+        }
+        return fn(info, nil)  // fn &#x4E3A;fn_ins1
+    }
+</code></pre><p><strong>&#x8FDB;&#x5165;NewFlattenListVisitor&#x7C7B;</strong></p>
+<hr>
+<pre><code>func (v FlattenListVisitor) Visit(fn VisitorFunc) error { //&#x63A5;&#x53D7;fn_ins2
+    return v.Visitor.Visit(fn_ins3) // Visitor&#x4E3A;EagerVisitorList &#x5217;&#x8868;
+}
+</code></pre><p>&#x533F;&#x540D;&#x51FD;&#x6570;fn_ins3 &#x7684;&#x5B9E;&#x73B0;</p>
+<pre><code>fn_ins3=func(info *Info, err error) error { // &#x4F20;&#x5165;info &#xFF0C;info &#x5728;&#x8BE5;&#x51FD;&#x6570;&#x4E2D;&#x88AB;&#x5904;&#x7406;&#x4E00;&#x6B21;
+        if err != nil {
+            return err
+        }
+        if info.Object == nil {
+            return fn(info, nil)
+        }
+        // &#x4ECE;info.Ojbect &#x751F;&#x6210;items ,item &#x4E5F;&#x4E3A; *Info &#x7C7B;&#x578B;
+        items, err := meta.ExtractList(info.Object)
+        if err != nil {
+            return fn(info, nil)
+        }
+        if errs := runtime.DecodeList(items, v.Mapper.Decoder); len(errs) &gt; 0 {
+            return utilerrors.NewAggregate(errs)
+        }
+
+        var preferredGVKs []schema.GroupVersionKind
+        if info.Mapping != nil &amp;&amp; !info.Mapping.GroupVersionKind.Empty() {
+            preferredGVKs = append(preferredGVKs, info.Mapping.GroupVersionKind)
+        }
+
+        for i := range items { // &#x5BF9;&#x6BCF;&#x4E2A;Item &#x8C03;&#x7528; fn_ins2
+            item, err := v.InfoForObject(items[i], preferredGVKs)
+            if err != nil {
+                return err
+            }
+            if len(info.ResourceVersion) != 0 {
+                item.ResourceVersion = info.ResourceVersion
+            }
+            if err := fn(item, nil); err != nil { // fn&#x4E3A;fn_ins2,&#x4F20;&#x5165;item.
+                return err
+            }
+        }
+        return nil
+    }
+</code></pre><p><strong>&#x8FDB;&#x5165; Visitor&#x4E3A;EagerVisitorList &#x7C7B;</strong></p>
+<hr>
+<pre><code>func (l EagerVisitorList) Visit(fn VisitorFunc) error { //&#x63A5;&#x6536;fn_ins3
+    errs := []error(nil) // &#x521D;&#x59CB;&#x5316;&#x4E00;&#x4E2A;error &#x5217;&#x8868;
+    for i := range l { //l &#x4E3A;&#x4E00;&#x4E2A;&#x5217;&#x8868;&#xFF0C;&#x6BCF;&#x4E00;&#x4E2A;&#x5143;&#x7D20;&#x90FD;&#x662F;FileVistor &#x7C7B;,&#x904D;&#x5386;&#x6BCF;&#x4E00;&#x4E2A;FileVistor &#x7C7B;
+        if err := l[i].Visit(fn_ins4); err != nil { //l[i]FileVistor &#x7C7B;&#xFF0C;&#x4E00;&#x4E2A;&#x8DEF;&#x5F84;&#x4E0B;&#x53EF;&#x80FD;&#x6709;&#x591A;&#x4E2A;&#x6587;&#x4EF6;
+            errs = append(errs, err)   // if &#x63A5;&#x6536;&#x7684;err &#x4E3A;nil,&#x8BE5;&#x53E5;&#x4E0D;&#x6267;&#x884C;&#x3002;
+        }
+    }
+    return utilerrors.NewAggregate(errs)  // &#x8FD4;&#x56DE;&#x9519;&#x8BEF;&#x5217;&#x8868;
+}
+</code></pre><p>&#x533F;&#x540D;&#x51FD;&#x6570;fn_ins4</p>
+<pre><code>fn_ins4=func(info *Info, err error) error {  // info &#x5DF2;&#x4E0D;&#x518D;&#x662F;fn_ins2 &#x7528;&#x5230;&#x7684;&#x90A3;&#x4E2A;info
+            if err != nil {
+                errs = append(errs, err) // &#x8BB0;&#x5F55;&#x9519;&#x8BEF;
+                return nil
+            }
+            if err := fn(info, nil); err != nil { //fn &#x5373; fn_ins3
+                errs = append(errs, err)  // &#x8BB0;&#x5F55;&#x9519;&#x8BEF;
+            }
+            return nil  
+        }
+</code></pre><p> &#x5728;fn_ins4 &#x770B;&#x5230;&#x8FD4;&#x56DE;&#x503C;&#x59CB;&#x7EC8;nil , &#x9519;&#x8BEF;&#x53EA;&#x662F;&#x8BB0;&#x5F55;&#x3002;</p>
+<p><strong>&#x8FDB;&#x5165; FileVisitor &#x7C7B;</strong></p>
+<hr>
+<pre><code>func (v *FileVisitor) Visit(fn VisitorFunc) error {// &#x63A5;&#x6536;fn_ins4
+    var f *os.File  //&#x6587;&#x4EF6;&#x53E5;&#x67C4;
+    if v.Path == constSTDINstr {
+        f = os.Stdin
+    } else {
+        var err error
+        f, err = os.Open(v.Path)
+        if err != nil {
+            return err
+        }
+        defer f.Close()
+    }
+
+    // TODO: Consider adding a flag to force to UTF16, apparently some
+    // Windows tools don&apos;t write the BOM
+    utf16bom := unicode.BOMOverride(unicode.UTF8.NewDecoder())
+    v.StreamVisitor.Reader = transform.NewReader(f, utf16bom) //&#x521D;&#x59CB;&#x5316;Reader
+
+    return v.StreamVisitor.Visit(fn) // &#x7EE7;&#x7EED;&#x8C03;&#x7528;Visit&#xFF0C;fn &#x4E3A;fn_ins4
+}
+</code></pre><p><strong>&#x8FDB;&#x5165;StreamVisitor &#x7C7B;</strong></p>
+<hr>
+<pre><code>func (v *StreamVisitor) Visit(fn VisitorFunc) error { 
+    d := yaml.NewYAMLOrJSONDecoder(v.Reader, 4096)
+    for { //&#x65E0;&#x9650;&#x5FAA;&#x73AF;
+        ext := runtime.RawExtension{}
+        if err := d.Decode(&amp;ext); err != nil {  //&#x8BFB;&#x6570;&#x636E;
+            if err == io.EOF { //&#x6B63;&#x786E;&#x8FD4;&#x56DE;
+                return nil
+            }
+            return err
+        }
+        // TODO: This needs to be able to handle object in other encodings and schemas.
+        ext.Raw = bytes.TrimSpace(ext.Raw) 
+        if len(ext.Raw) == 0 || bytes.Equal(ext.Raw, []byte(&quot;null&quot;)) {
+            continue
+        }
+        if err := ValidateSchema(ext.Raw, v.Schema); err != nil {
+            return fmt.Errorf(&quot;error validating %q: %v&quot;, v.Source, err)
+        }
+
+        /*&#x7EC8;&#x4E8E;&#x770B;&#x89C1;info &#x7684;&#x751F;&#x6210;&#x4E86;&#x3002;InfoForData &#x662F;Mapper &#x7ED3;&#x6784;&#x4F53;&#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x4F46;&#x5728;StreamVisitor&#x4E2D;&#x5305;&#x542B;&#x4E86;           
+          *Mapper &#x5C5E;&#x6027;/
+        info, err := v.InfoForData(ext.Raw, v.Source) 
+        if err != nil {
+            if fnErr := fn(info, err); fnErr != nil { 
+                return fnErr
+            }
+            continue
+        }
+        if err := fn(info, nil); err != nil { // &#x6267;&#x884C;fn_ins4
+            return err
+        }
+    }
+}
+</code></pre><p>&#x5728;StreamVisitor.Visit() &#x65B9;&#x6CD5;&#x4E2D;&#x8C03;&#x7528;&#x4E86;InfoForData() &#x751F;&#x6210;&#x4E86;info &#x8FD9;&#x4E2A;&#x5B9E;&#x4F8B;&#xFF0C;&#x63A5;&#x7740;<strong>&#x591A;&#x6B21;</strong>&#x56DE;&#x8C03;&#x4E86;&#x8FD9;&#x4E9B;&#x533F;&#x540D;&#x51FD;&#x6570;&#xFF0C;&#x6267;&#x884C;&#x6D41;&#x7A0B;&#x5982;&#x4E0B;&#x56FE;&#x6240;&#x793A;&#xFF08;&#x7EA2;&#x8272;&#x7684;&#x7BAD;&#x5934;&#x7EBF;&#x4FBF;&#x4E3A;&#x4E00;&#x6B21;&#x6267;&#x884C;&#x8FC7;&#x7A0B;&#xFF09;&#xFF1A;</p>
+<p><img src="../image/call-back functions.png" alt="callback funcs"></p>
+<p>&#x5BF9;info &#x7684;&#x52A0;&#x5DE5;&#x5904;&#x7406;&#xFF0C;&#x4E3B;&#x8981;&#x5728;fn_ins3, fn_ins2, fn_ins0 &#x4E2D;&#x3002;</p>
+<p>fn_ins3:</p>
+<p>fn_ins2:</p>
+<p>fn_ins0:   &#x8FDB;&#x5165;<code>createAndRefresh(info)</code>, &#x5728;&#x8BE5;&#x65B9;&#x6CD5;&#x5185;&#x751F;&#x6210;&#x4E86;&#x4E00;&#x4E2A;Helper&#x7ED3;&#x6784;&#x4F53;&#x5B9E;&#x4F8B;&#xFF0C;&#x8C03;&#x7528;&#x8BE5;&#x5B9E;&#x4F8B;&#x7684;Create() , &#x5C06;&#x6570;&#x636E;&#x53D1;&#x7ED9;server&#x7AEF;&#x3002;</p>
+<p>&#x5BF9;&#x4E8E;info &#x7684;&#x751F;&#x6210;&#xFF0C;&#x4E0B;&#x4E00;&#x8282;&#x8BE6;&#x7EC6;&#x5C55;&#x5F00;&#x3002;</p>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="construct-visitor.html" class="navigation navigation-prev " aria-label="Previous page: Visitor 实例构建">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="info-generation.html" class="navigation navigation-next " aria-label="Next page: info 实例生成">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Visit 方法执行","level":"1.2.3","depth":2,"next":{"title":"info 实例生成","level":"1.2.4","depth":2,"path":"kubectl/info-generation.md","ref":"kubectl/info-generation.md","articles":[]},"previous":{"title":"Visitor 实例构建","level":"1.2.2","depth":2,"path":"kubectl/construct-visitor.md","ref":"kubectl/construct-visitor.md","articles":[]},"dir":"ltr"},"config":{"plugins":[],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"rootdeep <zhiguo.lee@foxmail.com>","pdf":{"pageBreaksBefore":"/","headerTemplate":null,"paperSize":"a4","margin":{"right":62,"left":62,"top":36,"bottom":36},"fontSize":12,"fontFamily":"Arial","footerTemplate":null,"chapterMark":"pagebreak","pageNumbers":false},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"k8s 相关源码分析","links":{"sidebar":{"rootdeep":"http://rootdeep.github.io"}},"gitbook":"*","description":"This is a sample book created by gitbook","extension":null},"file":{"path":"kubectl/run-visit.md","mtime":"2018-05-29T06:19:10.576Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-05-29T07:41:38.641Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+
