@@ -898,11 +898,11 @@ for k, v := range proxier.portsMap {
 
 1. 资源更新信息来源
 
-   ![kube-proxy-data-source](/kube-proxy-code-analysis/kube-proxy-code-framework.jpg)
+   ![kube-proxy-data-source](../image/kube-proxy-code-analysis/kube-proxy-code-framework.jpg)
 
 2. 链建立及规则导向
 
-   ![kube-proxy IPtables](/kube-proxy-code-analysis/kube-proxy-iptables.jpg)
+   ![kube-proxy IPtables](../image/kube-proxy-code-analysis/kube-proxy-iptables.jpg)
 
 另外：对于数据包的出入口，有这么一句心得：只要你站在内核的角度理解，无论从虚拟网卡还是物理网卡收到一个包，对内核来说都是收包，都是prerouting链开始。无论一个包去往物理网卡还是虚拟网卡，对内核来说都是发出，都是从postrouting结束。本机进程收到就是input链，本机进程发出就是output链。
 
