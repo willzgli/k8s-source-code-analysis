@@ -732,7 +732,7 @@ Note: 整个刷新流程中，对于KUBE-POSTROUTING 链和KUBE-MARK-MASQ，分�
     - 对于到external_ip:port 的包打标签；
     - 对于从集群外发送的目的地址是extenralIP 的包建立规则
     - 对于目的地址和node 地址相同的包建立规则
-  - 如果该服务没有endpoints ，在KUBE-EXTERNAL-SERVICES 添加 filter 规则，表示放弃目的地址是{{external_ip:xxx}的包
+  - 如果该服务没有endpoints ，在KUBE-EXTERNAL-SERVICES 添加 filter 规则，表示放弃目的地址是{external_ip:xxx}的包
 
   相关规则形式如下
 
@@ -898,11 +898,11 @@ for k, v := range proxier.portsMap {
 
 1. 资源更新信息来源
 
-   ![kube-proxy-data-source](../image/kube-proxy-code-analysis/kube-proxy-code-framework.jpg)
+   ![kube-proxy-data-source](/kube-proxy-code-analysis/kube-proxy-code-framework.jpg)
 
 2. 链建立及规则导向
 
-   ![kube-proxy IPtables](../image/kube-proxy-code-analysis/kube-proxy-iptables.jpg)
+   ![kube-proxy IPtables](/kube-proxy-code-analysis/kube-proxy-iptables.jpg)
 
 另外：对于数据包的出入口，有这么一句心得：只要你站在内核的角度理解，无论从虚拟网卡还是物理网卡收到一个包，对内核来说都是收包，都是prerouting链开始。无论一个包去往物理网卡还是虚拟网卡，对内核来说都是发出，都是从postrouting结束。本机进程收到就是input链，本机进程发出就是output链。
 
