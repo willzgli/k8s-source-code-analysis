@@ -1,0 +1,1188 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>源码分析 · k8s 相关源码分析</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="rootdeep <zhiguo.lee@foxmail.com>">
+        
+        
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="http://rootdeep.github.io" target="_blank" class="custom-link">rootdeep</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="../">
+            
+                <a href="../">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" data-path="../kubectl/">
+            
+                <a href="../kubectl/">
+            
+                    
+                    kubectl  
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1" data-path="../kubectl/enter-command.html">
+            
+                <a href="../kubectl/enter-command.html">
+            
+                    
+                    进入命令
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2" data-path="../kubectl/construct-visitor.html">
+            
+                <a href="../kubectl/construct-visitor.html">
+            
+                    
+                    Visitor 实例构建
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.3" data-path="../kubectl/run-visit.html">
+            
+                <a href="../kubectl/run-visit.html">
+            
+                    
+                    Visit 方法执行
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.4" data-path="../kubectl/info-generation.html">
+            
+                <a href="../kubectl/info-generation.html">
+            
+                    
+                    info 实例生成
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" >
+            
+                <span>
+            
+                    
+                    kube-apiserver
+            
+                </span>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5" >
+            
+                <span>
+            
+                    
+                    kube-proxy
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter active" data-level="1.5.1" data-path="kube-proxy-code-analysis.html">
+            
+                <a href="kube-proxy-code-analysis.html">
+            
+                    
+                    源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >源码分析</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="&#x529F;&#x80FD;&#x6982;&#x8FF0;">&#x529F;&#x80FD;&#x6982;&#x8FF0;</h1>
+<p>kube-proxy&#x662F;&#x7BA1;&#x7406;service&#x7684;&#x8BBF;&#x95EE;&#x5165;&#x53E3;&#xFF0C;&#x5305;&#x62EC;&#x96C6;&#x7FA4;&#x5185;Pod&#x5230;Service&#x7684;&#x8BBF;&#x95EE;&#x548C;&#x96C6;&#x7FA4;&#x5916;&#x8BBF;&#x95EE;service&#x3002;&#x5F53;&#x7528;&#x6237;&#x521B;&#x5EFA; service &#x7684;&#x65F6;&#x5019;&#xFF0C;endpointController &#x4F1A;&#x6839;&#x636E;service &#x7684; selector &#x627E;&#x5230;&#x5BF9;&#x5E94;&#x7684; pod&#xFF0C;&#x7136;&#x540E;&#x751F;&#x6210; endpoints &#x5BF9;&#x8C61;&#x4FDD;&#x5B58;&#x5230; etcd &#x4E2D;&#x3002;&#x8FD0;&#x884C;&#x5728;&#x6BCF;&#x4E2A;&#x8282;&#x70B9;&#x4E0A;&#x7684;Kube-proxy&#x4F1A;&#x901A;&#x8FC7;api-server &#x83B7;&#x5F97;etcd &#x4E2D; Service&#x548C;Endpoints&#x7684;&#x53D8;&#x5316;&#x4FE1;&#x606F;&#xFF0C;&#x5E76;&#x8C03;&#x7528; kube-proxy &#x914D;&#x7F6E;&#x7684;&#x4EE3;&#x7406;&#x6A21;&#x5F0F;&#x6765;&#x66F4;&#x65B0;&#x4E3B;&#x673A;&#x4E0A;&#x7684;iptables &#x8F6C;&#x53D1;&#x89C4;&#x5219;,&#x901A;&#x8FC7;&#x4FEE;&#x6539;iptables&#x89C4;&#x5219;&#x6539;&#x53D8;&#x62A5;&#x6587;&#x7684;&#x6D41;&#x5411;&#x3002;</p>
+<p>&#x5728;v1.12&#x7248;&#x672C;&#x4E2D;Kube-Proxy &#x5DF2;&#x7ECF;&#x5B9E;&#x73B0;&#x4E86;5&#x79CD;&#x6A21;&#x5F0F;&#x7684;&#x7684;&#x4EE3;&#x7406;&#xFF1A;userspace,ipatables,IPVS&#xFF0C;kernelspace&#x3002;winuserspace&#x3002;</p>
+<ol>
+<li>Userspace&#x6A21;&#x5F0F;&#xFF08;k8s&#x7248;&#x672C;&#x4E3A;1.2&#x4E4B;&#x524D;&#x9ED8;&#x8BA4;&#x6A21;&#x5F0F;&#xFF09;&#xFF1A;kube-rpxoy&#x5728;&#x7528;&#x6237;&#x7A7A;&#x95F4;&#x76D1;&#x542C;&#x4E00;&#x4E2A;&#x7AEF;&#x53E3;&#xFF0C;&#x6240;&#x6709;&#x670D;&#x52A1;&#x901A;&#x8FC7; iptables &#x8F6C;&#x53D1;&#x5230;&#x8FD9;&#x4E2A;&#x7AEF;&#x53E3;&#xFF0C;&#x7136;&#x540E;&#x5728;&#x5176;&#x5185;&#x90E8;&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x5230;&#x5B9E;&#x9645;&#x7684; Pod&#x3002;&#x8BE5;&#x65B9;&#x5F0F;&#x6700;&#x4E3B;&#x8981;&#x7684;&#x95EE;&#x9898;&#x662F;&#x6548;&#x7387;&#x4F4E;&#xFF0C;&#x6709;&#x660E;&#x663E;&#x7684;&#x6027;&#x80FD;&#x74F6;&#x9888;&#x3002;</li>
+<li>&#x4F7F;&#x7528;Iptables&#x6A21;&#x5F0F;&#xFF08;k8s&#x7248;&#x672C;&#x4E3A;1.2&#x4E4B;&#x540E;&#x9ED8;&#x8BA4;&#x6A21;&#x5F0F;)&#xFF1A;iptables&#x7684;&#x65B9;&#x5F0F;&#x5219;&#x662F;&#x5229;&#x7528;&#x4E86;linux&#x7684;iptables&#x7684;nat&#x8F6C;&#x53D1;&#x8FDB;&#x884C;&#x5B9E;&#x73B0;&#xFF0C;&#x5229;&#x7528;iptables&#x7684;DNAT&#x6A21;&#x5757;&#xFF0C;&#x5B9E;&#x73B0;&#x4E86;Service&#x5165;&#x5230;Pod&#x5B9E;&#x9645;&#x5730;&#x5740;&#x7684;&#x8F6C;&#x6362;&#x3002; &#x8BE5;&#x65B9;&#x5F0F;&#x6700;&#x4E3B;&#x8981;&#x7684;&#x95EE;&#x9898;&#x662F;&#x5728;&#x670D;&#x52A1;&#x591A;&#x7684;&#x65F6;&#x5019;&#x4EA7;&#x751F;&#x592A;&#x591A;&#x7684; iptables &#x89C4;&#x5219;&#xFF0C;&#x975E;&#x589E;&#x91CF;&#x5F0F;&#x66F4;&#x65B0;&#x4F1A;&#x5F15;&#x5165;&#x4E00;&#x5B9A;&#x7684;&#x65F6;&#x5EF6;&#xFF0C;&#x5927;&#x89C4;&#x6A21;&#x60C5;&#x51B5;&#x4E0B;&#x6709;&#x660E;&#x663E;&#x7684;&#x6027;&#x80FD;&#x95EE;&#x9898;</li>
+<li>IPVS&#xFF1A;v1.11 &#x65B0;&#x589E;&#x4E86; ipvs &#x6A21;&#x5F0F;&#xFF08;v1.8 &#x5F00;&#x59CB;&#x652F;&#x6301;&#x6D4B;&#x8BD5;&#x7248;&#xFF0C;&#x5E76;&#x5728; v1.11 GA&#xFF09;&#x3002;
+IPVS&#x662F;LVS&#x7684;&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x6A21;&#x5757;&#xFF0C;&#x4EA6;&#x57FA;&#x4E8E;netfilter&#xFF0C;&#x4F46;&#x6BD4;iptables&#x6027;&#x80FD;&#x66F4;&#x9AD8;&#xFF0C;&#x5177;&#x5907;&#x66F4;&#x597D;&#x7684;&#x53EF;&#x6269;&#x5C55;&#x6027;&#xFF0C;&#x91C7;&#x7528;&#x589E;&#x91CF;&#x5F0F;&#x66F4;&#x65B0;&#xFF0C;&#x5E76;&#x53EF;&#x4EE5;&#x4FDD;&#x8BC1; service &#x66F4;&#x65B0;&#x671F;&#x95F4;&#x8FDE;&#x63A5;&#x4FDD;&#x6301;&#x4E0D;&#x65AD;&#x5F00;</li>
+<li>kernnelspace:</li>
+<li>winuserspace&#xFF1A;&#x540C; userspace&#xFF0C;&#x4F46;&#x5DE5;&#x4F5C;&#x5728; windows &#x8282;&#x70B9;&#x4E0A;</li>
+</ol>
+<h1 id="&#x6E90;&#x7801;&#x8D70;&#x8BFB;">&#x6E90;&#x7801;&#x8D70;&#x8BFB;</h1>
+<p>&#x672C;&#x6587;&#x4EE5;iptables &#x4EE3;&#x7406;&#x6A21;&#x5F0F;&#x4E3A;&#x4F8B;,&#x5BF9;proxy &#x7684;&#x529F;&#x80FD;&#x5B9E;&#x73B0;&#x8FDB;&#x884C;&#x5206;&#x6790;&#x3002;&#x57FA;&#x4E8E;iptables&#x7684;kube-proxy&#x7684;&#x4E3B;&#x8981;&#x804C;&#x8D23;&#x5305;&#x62EC;&#x4E24;&#x5927;&#x5757;&#xFF1A;&#x4E00;&#x5757;&#x662F;&#x4FA6;&#x542C;service&#x66F4;&#x65B0;&#x4E8B;&#x4EF6;&#xFF0C;&#x5E76;&#x66F4;&#x65B0;service&#x76F8;&#x5173;&#x7684;iptables&#x89C4;&#x5219;&#xFF0C;&#x4E00;&#x5757;&#x662F;&#x4FA6;&#x542C;endpoint&#x66F4;&#x65B0;&#x4E8B;&#x4EF6;&#xFF0C;&#x66F4;&#x65B0;endpoint&#x76F8;&#x5173;&#x7684;iptables&#x89C4;&#x5219;&#x3002;&#x4E5F;&#x5C31;&#x662F;&#x8BF4;kube-proxy&#x53EA;&#x662F;&#x4F5C;&#x4E3A;controller &#x8D1F;&#x8D23;&#x66F4;&#x65B0;&#x66F4;&#x65B0;&#x89C4;&#x5219;&#xFF0C;&#x5B9E;&#x73B0;&#x8F6C;&#x53D1;&#x670D;&#x52A1;&#x7684;&#x662F;&#x5185;&#x6838;&#x7684;netfilter&#xFF0C;&#x4F53;&#x73B0;&#x5728;&#x7528;&#x6237;&#x6001;&#x5219;&#x662F;iptables&#x3002;</p>
+<h2 id="&#x91CD;&#x8981;&#x7ED3;&#x6784;&#x4F53;&#x8BF4;&#x660E;">&#x91CD;&#x8981;&#x7ED3;&#x6784;&#x4F53;&#x8BF4;&#x660E;</h2>
+<h3 id="proxyserver">ProxyServer</h3>
+<p>ProxyServer &#x7ED3;&#x6784;&#x4F53;&#x4E2D;&#x5B9A;&#x4E49;&#x7684;&#x5C5E;&#x6027;&#x4EE3;&#x8868;&#x4E86;kube-proxy server &#x8FD0;&#x884C;&#x65F6;&#x9700;&#x8981;&#x7684;&#x6240;&#x6709;&#x53D8;&#x91CF;&#x3002;kube-proxy server &#x8C03;&#x7528;&#x7684;&#x65B9;&#x6CD5;&#x5747;&#x6765;&#x8BE5;&#x7ED3;&#x6784;&#x4F53;&#x5185;&#x53D8;&#x91CF;&#x62E5;&#x6709;&#x7684;&#x65B9;&#x6CD5;&#x3002;</p>
+<p>kubernetes/cmd/proxy-server/app/server.go</p>
+<pre><code class="lang-go"><span class="hljs-keyword">type</span> ProxyServer <span class="hljs-keyword">struct</span> {
+    Client                 clientset.Interface
+    EventClient            v1core.EventsGetter    
+    IptInterface           utiliptables.Interface <span class="hljs-comment">// &#x63A5;&#x53E3;&#x4E2D;&#x5B9A;&#x4E49;&#x4E86;&#x66F4;&#x65B0;iptables &#x7684;&#x65B9;&#x6CD5;&#x96C6;&#x5408;&#xFF0C;&#x5982;DeleteChian,DeleteRule, EnsureChain,EnsureRule</span>
+    IpvsInterface          utilipvs.Interface <span class="hljs-comment">// &#x5B9A;&#x4E49;&#x64CD;&#x4F5C;ipvs &#x7684;&#x65B9;&#x6CD5;&#x96C6;</span>
+    IpsetInterface         utilipset.Interface <span class="hljs-comment">//&#x5B9A;&#x4E49;&#x4E86;&#x64CD;&#x4F5C;ipset &#x7684;&#x65B9;&#x6CD5;&#x96C6;</span>
+    execer                 exec.Interface<span class="hljs-comment">// &#x5B9A;&#x4E49;&#x5305;&#x88C5;os/exec&#x5E93;&#x4E2D;Command, Commandcontext, LookPath&#x65B9;&#x6CD5;&#x7684;&#x63A5;&#x53E3;</span>
+    Proxier                proxy.ProxyProvider <span class="hljs-comment">//Proxier &#x6709;&#x4E09;&#x79CD;&#x5B9E;&#x73B0;&#x65B9;&#x5F0F;&#xFF0C;&#x5206;&#x522B;&#x5BF9;&#x5E94;Linux &#x73AF;&#x5883;&#x4E2D;&#x4E09;&#x79CD;&#x6A21;&#x5F0F;&#x7684;&#x4EE3;&#x7406;&#x6A21;&#x5F0F;</span>
+    Broadcaster            record.EventBroadcaster <span class="hljs-comment">//&#x63A5;&#x53D7;Event&#xFF0C;&#x4EA4;&#x4E8E;&#x5404;&#x4E2A;&#x5904;&#x7406;&#x51FD;&#x6570;&#x8FDB;&#x884C;&#x5904;&#x7406;</span>
+    Recorder               record.EventRecorder <span class="hljs-comment">// Event &#x8BB0;&#x5F55;&#x8005;</span>
+    ConntrackConfiguration kubeproxyconfig.KubeProxyConntrackConfiguration
+    Conntracker            Conntracker <span class="hljs-comment">// if nil, ignored</span>
+    ProxyMode              <span class="hljs-keyword">string</span>
+    NodeRef                *v1.ObjectReference
+    CleanupAndExit         <span class="hljs-keyword">bool</span>
+    CleanupIPVS            <span class="hljs-keyword">bool</span>
+    MetricsBindAddress     <span class="hljs-keyword">string</span>  <span class="hljs-comment">//127.0.0.1:10249  http prometheus metrics port;</span>
+    EnableProfiling        <span class="hljs-keyword">bool</span>
+    OOMScoreAdj            *<span class="hljs-keyword">int32</span> <span class="hljs-comment">//&#x901A;&#x8FC7;&#x4E00;&#x4E2A;&#x6570;&#x503C;&#x7528;&#x6765;&#x8868;&#x5F81;&#x8FDB;&#x7A0B;&#x5F53;&#x53D1;&#x751F;OOM&#x65F6;&#x7CFB;&#x7EDF;&#x5BF9;&#x8BE5;&#x8FDB;&#x7A0B;&#x7684;&#x884C;&#x4E3A;</span>
+    ResourceContainer      <span class="hljs-keyword">string</span>
+    ConfigSyncPeriod       time.Duration <span class="hljs-comment">//Default 15m0s</span>
+    ServiceEventHandler    config.ServiceHandler <span class="hljs-comment">//</span>
+    EndpointsEventHandler  config.EndpointsHandler <span class="hljs-comment">//</span>
+    HealthzServer          *healthcheck.HealthzServer <span class="hljs-comment">// 0.0.0.0:10256  http healthz port;</span>
+}
+</code></pre>
+<h3 id="proxier">Proxier</h3>
+<p>&#x5728;&#x6BCF;&#x4E00;&#x79CD;&#x4EE3;&#x7406;&#x6A21;&#x5F0F;&#x4E0B;&#xFF0C;&#x90FD;&#x5B9A;&#x4E49;&#x4E86;&#x81EA;&#x5DF1;&#x7684;Proxier &#x7ED3;&#x6784;&#x4F53;&#xFF0C;&#x8BE5;&#x7ED3;&#x6784;&#x4F53;&#x53CA;&#x65B9;&#x6CD5;&#x5B9E;&#x73B0;&#x4E86;&#x8BE5;&#x6A21;&#x5F0F;&#x4E0B;&#x7684;&#x4EE3;&#x7406;&#x89C4;&#x5219;&#x7684;&#x66F4;&#x65B0;&#x65B9;&#x6CD5;&#x3002;&#x5728;Iptables &#x6A21;&#x5F0F;&#x4E0B;&#xFF0C;Proxier &#x7ED3;&#x6784;&#x4F53;&#x5B9A;&#x4E49;&#x5982;&#x4E0B;&#xFF1A;</p>
+<p>kubernetes/pkg/proxy/iptables/proxier.go</p>
+<pre><code class="lang-go"><span class="hljs-keyword">type</span> Proxier <span class="hljs-keyword">struct</span> {
+    <span class="hljs-comment">//EndpointChangeTracker&#x4E2D;items&#x5C5E;&#x6027;&#x4E3A;&#x4E00;&#x4E2A;&#x4E24;&#x7EA7;map,&#x7528;&#x6765;&#x4FDD;&#x5B58;&#x6240;&#x6709;namespace &#x4E0B;endpoints &#x7684;&#x53D8;&#x5316;&#x4FE1;&#x606F;&#x3002;</span>
+    <span class="hljs-comment">//&#x7B2C;&#x4E00;&#x7EA7;map&#x4EE5;namespece &#x4E3A;key&#xFF0C;value &#x503C;&#x4E3A;&#x8BE5;namespace&#x4E0B;&#x6240;&#x6709;endpoints &#x66F4;&#x65B0;&#x524D;&#xFF08;previous)&#x3001;&#x540E;(current)&#x7684;&#x4FE1;&#x606F;&#x3002;</span>
+    <span class="hljs-comment">//&#x524D;&#x3001;&#x540E;&#x4FE1;&#x606F;&#x5206;&#x522B;&#x4E3A;&#x4E00;&#x4E2A;map ,&#x5373;&#x7B2C;&#x4E8C;&#x7EA7;map: ServiceMap&#x3002;</span>
+    <span class="hljs-comment">//&#x7B2C;&#x4E8C;&#x7EA7;map&#x7684;key&#x4E3A;ServicePortName &#x7ED3;&#x6784;&#xFF0C;&#x6807;&#x8BB0;endpoints &#x5BF9;&#x5E94;&#x7684;service&#xFF0C;value&#x4E3A;endpoint&#x4FE1;&#x606F;&#x3002; </span>
+    <span class="hljs-comment">// EndpointChangeTracker &#x4E2D;&#x5B9E;&#x73B0;&#x4E86;&#x66F4;&#x65B0;endpoint &#x7684;&#x65B9;&#x6CD5;</span>
+    endpointsChanges *proxy.EndpointChangeTracker
+
+    <span class="hljs-comment">// &#x540C;&#x7406;&#xFF0C;ServiceChangeTracker &#x4E2D;&#x4F7F;&#x7528;&#x4E00;&#x4E2A;&#x4E24;&#x7EA7;map&#x4FDD;&#x5B58;&#x6240;&#x6709;namespace &#x4E0B;&#x7684;service&#x7684;&#x53D8;&#x5316;&#x4FE1;&#x606F;&#xFF0C;&#x5E76;&#x5B9A;&#x4E49;&#x4E86;&#x66F4;&#x65B0;service&#x7684;&#x65B9;&#x6CD5;</span>
+    serviceChanges   *proxy.ServiceChangeTracker
+
+    mu           sync.Mutex <span class="hljs-comment">// protects the following fields</span>
+
+    serviceMap   proxy.ServiceMap <span class="hljs-comment">// &#x540C;serviceChanges &#x7684;&#x7B2C;&#x4E8C;&#x53CA;map &#x7ED3;&#x6784;&#xFF0C;&#x8BB0;&#x5F55;&#x4E86;&#x6240;&#x6709;namespace&#x4E0B;&#x9700;&#x8981;&#x66F4;&#x65B0;iptables&#x89C4;&#x5219;&#x7684;service </span>
+    endpointsMap proxy.EndpointsMap <span class="hljs-comment">//&#x540C;endpointsChanges &#x7684;&#x7B2C;&#x4E8C;&#x53CA;map &#x7ED3;&#x6784;&#xFF0C;&#x8BB0;&#x5F55;&#x4E86;&#x6240;&#x6709;namespace &#x9700;&#x8981;&#x66F4;&#x65B0;iptables&#x89C4;&#x5219;&#x7684;endpoints</span>
+
+    portsMap     <span class="hljs-keyword">map</span>[utilproxy.LocalPort]utilproxy.Closeable
+
+    endpointsSynced <span class="hljs-keyword">bool</span>  <span class="hljs-comment">// Proxier &#x521D;&#x59CB;&#x5316;&#x65F6;&#x4E3A;False </span>
+    servicesSynced  <span class="hljs-keyword">bool</span> <span class="hljs-comment">// Proxier &#x521D;&#x59CB;&#x5316;&#x65F6;&#x4E3A;False</span>
+    initialized     <span class="hljs-keyword">int32</span>
+
+    syncRunner      *async.BoundedFrequencyRunner <span class="hljs-comment">//async.BoundedFrequencyRunner &#x5177;&#x6709;QPS&#x529F;&#x80FD;&#xFF0C;&#x63A7;&#x5236;&#x88AB;&#x6258;&#x7BA1;&#x65B9;&#x6CD5;&#x7684;&#x53D1;&#x751F;&#x901F;&#x7387;</span>
+
+    <span class="hljs-comment">// These are effectively const and do not need the mutex to be held.</span>
+    iptables       utiliptables.Interface <span class="hljs-comment">//iptables&#x7684;&#x6267;&#x884C;&#x5668;&#xFF0C;&#x5B9A;&#x4E49;&#x4E86;Iptables &#x7684;&#x64CD;&#x4F5C;&#x65B9;&#x6CD5;</span>
+    masqueradeAll  <span class="hljs-keyword">bool</span> 
+    masqueradeMark <span class="hljs-keyword">string</span>
+    exec           utilexec.Interface <span class="hljs-comment">// &#x62BD;&#x8C61;&#x4E86; os/exec &#x4E2D;&#x7684;&#x65B9;&#x6CD5;</span>
+    clusterCIDR    <span class="hljs-keyword">string</span>
+    hostname       <span class="hljs-keyword">string</span>
+    nodeIP         net.IP
+    portMapper     utilproxy.PortOpener <span class="hljs-comment">//&#x4EE5;&#x6253;&#x5F00;&#x7684;UDP&#x6216;TCP&#x7AEF;&#x53E3;</span>
+    recorder       record.EventRecorder
+    healthChecker  healthcheck.Server
+    healthzServer  healthcheck.HealthzUpdater
+
+    precomputedProbabilities []<span class="hljs-keyword">string</span>
+
+    iptablesData             *bytes.Buffer
+    existingFilterChainsData *bytes.Buffer
+    filterChains             *bytes.Buffer
+    filterRules              *bytes.Buffer
+    natChains                *bytes.Buffer
+    natRules                 *bytes.Buffer
+
+    endpointChainsNumber <span class="hljs-keyword">int</span>
+
+    <span class="hljs-comment">// Values are as a parameter to select the interfaces where nodeport works.</span>
+    nodePortAddresses []<span class="hljs-keyword">string</span>
+    <span class="hljs-comment">// networkInterfacer defines an interface for several net library functions.</span>
+    <span class="hljs-comment">// Inject for test purpose.</span>
+    networkInterfacer utilproxy.NetworkInterfacer
+}
+</code></pre>
+<h3 id="proxier-&#x81EA;&#x5B9A;&#x4E49;&#x7684;&#x94FE;">Proxier &#x81EA;&#x5B9A;&#x4E49;&#x7684;&#x94FE;</h3>
+<p>&#x5728;iptables &#x539F;&#x6709;&#x7684;5&#x4E2A;&#x94FE;&#x4E0A;&#xFF0C;k8s &#x53C8;&#x589E;&#x52A0;&#x4E86;&#x4EE5;&#x4E0B;&#x81EA;&#x5B9A;&#x4E49;&#x94FE;&#xFF0C;&#x5728;&#x81EA;&#x5B9A;&#x4E49;&#x94FE;&#x4E0A;&#x6DFB;&#x52A0;&#x89C4;&#x5219;&#xFF0C;&#x4EE5;&#x63A7;&#x5236;iptables &#x5BF9;k8s &#x6570;&#x636E;&#x5305;&#x7684;&#x8F6C;&#x53D1;&#x3002;</p>
+<pre><code class="lang-go"><span class="hljs-keyword">const</span> (
+    iptablesMinVersion = utiliptables.MinCheckVersion <span class="hljs-comment">// &#x652F;&#x6301;-C/--flag &#x53C2;&#x6570;&#x7684;iptable &#x6700;&#x4F4E;&#x7248;&#x672C;</span>
+    <span class="hljs-comment">//&#x5BF9;&#x4E8E;Service type=ClusterIP&#x7684;&#x6BCF;&#x4E2A;&#x7AEF;&#x53E3;&#x90FD;&#x4F1A;&#x5728;KUBE-SERVICES&#x4E2D;&#x6709;&#x4E00;&#x6761;&#x5BF9;&#x5E94;&#x7684;&#x89C4;&#x5219;</span>
+    kubeServicesChain utiliptables.Chain = <span class="hljs-string">&quot;KUBE-SERVICES&quot;</span> 
+
+    <span class="hljs-comment">//</span>
+    kubeExternalServicesChain utiliptables.Chain=<span class="hljs-string">&quot;KUBE-EXTERNAL-SERVICES&quot;</span>
+
+    <span class="hljs-comment">//&#x5BF9;&#x4E8E;Service type=NodePort&#x7684;&#x6BCF;&#x4E2A;&#x7AEF;&#x53E3;&#x90FD;&#x4F1A;&#x5728;KUBE-NODEPORTS&#x4E2D;&#x6709;&#x4E00;&#x6761;&#x5BF9;&#x5E94;&#x7684;&#x89C4;&#x5219;</span>
+    kubeNodePortsChain utiliptables.Chain = <span class="hljs-string">&quot;KUBE-NODEPORTS&quot;</span>
+
+    <span class="hljs-comment">//&#x5728;KUBE-POSTROUTING&#x94FE;&#x4E0A;&#xFF0C;&#x5BF9;(0x400)&#x5305;&#x505A;SNAT</span>
+    kubePostroutingChain utiliptables.Chain = <span class="hljs-string">&quot;KUBE-POSTROUTING&quot;</span>
+
+    <span class="hljs-comment">//&#x6253;&#x6807;&#x7B7E;&#x94FE;&#xFF0C;&#x5BF9;&#x4E8E;&#x8FDB;&#x5165;&#x6B64;&#x94FE;&#x7684;&#x62A5;&#x6587;&#x6253;&#x6807;&#x7B7E;(0x400)&#xFF0C;&#x9884;&#x793A;&#x88AB;&#x6807;&#x7B7E;&#x5305;&#x8981;&#x505A;NAT</span>
+    KubeMarkMasqChain utiliptables.Chain = <span class="hljs-string">&quot;KUBE-MARK-MASQ&quot;</span> 
+
+    <span class="hljs-comment">//&#x6253;&#x6807;&#x7B7E;&#x94FE;&#xFF0C;&#x5BF9;&#x4E8E;&#x8FDB;&#x5165;&#x6B64;&#x94FE;&#x7684;&#x62A5;&#x6587;&#x6253;&#x6807;&#x7B7E;(0x800)&#xFF0C;&#x9884;&#x793A;&#x6B64;&#x5305;&#x5C06;&#x8981;&#x88AB;&#x653E;&#x5F03;</span>
+    KubeMarkDropChain utiliptables.Chain = <span class="hljs-string">&quot;KUBE-MARK-DROP&quot;</span> 
+
+    <span class="hljs-comment">//&#x8DF3;&#x8F6C;</span>
+    kubeForwardChain utiliptables.Chain = <span class="hljs-string">&quot;KUBE-FORWARD&quot;</span>
+)
+</code></pre>
+<h2 id="proxy-server-&#x542F;&#x52A8;">Proxy Server &#x542F;&#x52A8;</h2>
+<p>&#x7A7F;&#x8FC7;cobra.Command &#x5305;&#x88C5;&#x7684;&#x4E00;&#x4E2A;&#x542F;&#x52A8;&#x547D;&#x4EE4;&#xFF0C;&#x8D70;&#x5230;&#x8DDF;kube-proxy &#x670D;&#x52A1;&#x76F8;&#x5173;&#x7684;&#x4E00;&#x4E2A;&#x4EE3;&#x7801;&#x5165;&#x53E3; Run()&#x3002;&#x5728;Run()&#x4E2D;&#xFF0C;&#x4E3B;&#x8981;&#x5C31;&#x662F;&#x4E24;&#x4EF6;&#x4E8B;&#xFF1A;</p>
+<ol>
+<li><p>&#x751F;&#x6210;&#x4E00;&#x4E2A;ProxyServer &#x5B9E;&#x4F8B;&#xFF1B;</p>
+</li>
+<li><p>&#x8FD0;&#x884C;ProxyServer &#x5B9E;&#x4F8B;&#x7684;Run &#x65B9;&#x6CD5;&#xFF0C;&#x8FD0;&#x884C;&#x670D;&#x52A1;&#x3002;</p>
+</li>
+</ol>
+<p>kubernetes/cmd/kube-proxy/app/server.go</p>
+<pre><code class="lang-go"><span class="hljs-keyword">func</span> (o *Options) Run() error {
+    <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(o.WriteConfigTo) &gt; <span class="hljs-number">0</span> {
+        <span class="hljs-keyword">return</span> o.writeConfigFile()
+    }
+
+    proxyServer, err := NewProxyServer(o)  <span class="hljs-comment">//&#x521D;&#x59CB;&#x5316;&#x7ED3;&#x6784;&#x4F53;ProxyServer</span>
+    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+        <span class="hljs-keyword">return</span> err
+    }
+
+    <span class="hljs-keyword">return</span> proxyServer.Run() <span class="hljs-comment">// &#x8FD0;&#x884C;ProxyServer</span>
+}
+</code></pre>
+<h2 id="proxyserver-&#x521D;&#x59CB;&#x5316;">ProxyServer &#x521D;&#x59CB;&#x5316;</h2>
+<p>&#x8FDB;&#x5165;NewProxyServer(o) &#x65B9;&#x6CD5;&#xFF0C;&#x5F00;&#x59CB;ProxyServer &#x7684;&#x521D;&#x59CB;&#x5316;&#x8FC7;&#x7A0B;&#x521D;&#x59CB;&#x5316;&#x8FC7;&#x7A0B;&#x4E2D;&#xFF0C;&#x91CD;&#x8981;&#x7684;&#x4E00;&#x4E2A;&#x73AF;&#x8282;&#x5C31;&#x662F;&#x6839;&#x636E;&#x4E0D;&#x540C;&#x7684;&#x4EE3;&#x7406;&#x6A21;&#x5F0F;&#x751F;&#x6210;&#x4E0D;&#x901A;&#x7684;Proxier&#x3002;&#x521D;&#x59CB;&#x5316;&#x8FC7;&#x7A0B;&#x4E2D;&#xFF0C;&#x4E3B;&#x8981;&#x53D8;&#x91CF;&#x7684;&#x521D;&#x59CB;&#x5316;&#x53CA;&#x4F5C;&#x7528;&#x5DF2;&#x5728;&#x4EE3;&#x7801;&#x4E2D;&#x8BF4;&#x660E;&#x3002;</p>
+<p>kubernetes/cmd/proxy-server/app/server_others.go</p>
+<pre><code class="lang-go"><span class="hljs-keyword">func</span> newProxyServer(
+    config *proxyconfigapi.KubeProxyConfiguration,
+    cleanupAndExit <span class="hljs-keyword">bool</span>,
+    cleanupIPVS <span class="hljs-keyword">bool</span>,
+    scheme *runtime.Scheme,
+    master <span class="hljs-keyword">string</span>) (*ProxyServer, error) {
+    ...
+    protocol := utiliptables.ProtocolIpv4 <span class="hljs-comment">// &#x83B7;&#x53D6;&#x673A;&#x5668;&#x4F7F;&#x7528;&#x7684;IP&#x534F;&#x8BAE;&#x7248;&#x672C;&#xFF0C;&#x9ED8;&#x8BA4;&#x4F7F;&#x7528;IPV4</span>
+    ...
+    <span class="hljs-comment">// Create a iptables utils.</span>
+    execer := exec.New()  <span class="hljs-comment">// &#x5305;&#x88C5;&#x4E86;os/exec&#x4E2D;&#x7684;command,LookPath,CommandContext &#x65B9;&#x6CD5;&#xFF0C;&#x7EC4;&#x88C5;&#x4E00;&#x4E2A;&#x7CFB;&#x7EDF;&#x8C03;&#x7528;&#x7684;&#x547D;&#x4EE4;&#x548C;&#x53C2;&#x6570;</span>
+    dbus = utildbus.New()
+    <span class="hljs-comment">//iptInterface &#x8D4B;&#x503C;&#x4E3A;runner&#x7ED3;&#x6784;&#x4F53;&#xFF0C;&#x8BE5;&#x7ED3;&#x6784;&#x4F53;&#x5B9E;&#x73B0;&#x4E86;&#x63A5;&#x53E3;utiliptables.Interface&#x4E2D;&#x5B9A;&#x4E49;&#x7684;&#x65B9;&#x6CD5;&#xFF0C;</span>
+    <span class="hljs-comment">//&#x5404;&#x65B9;&#x6CD5;&#x4E2D;&#x901A;&#x8FC7;runContext()&#x65B9;&#x6CD5;&#x8C03;&#x7528;execer&#x7684;&#x547D;&#x4EE4;&#x5305;&#x88C5;&#x65B9;&#x6CD5;&#x8FD4;&#x56DE;&#x4E00;&#x4E2A;&#x88AB;&#x5305;&#x88C5;&#x7684;iptables &#x547D;&#x4EE4;</span>
+    iptInterface = utiliptables.New(execer, dbus, protocol)
+    ...
+    <span class="hljs-comment">//EventBroadcaster&#x4F1A;&#x5C06;&#x6536;&#x5230;&#x7684;Event&#x4EA4;&#x4E8E;&#x5404;&#x4E2A;&#x5904;&#x7406;&#x51FD;&#x6570;&#x8FDB;&#x884C;&#x5904;&#x7406;&#x3002;&#x63A5;&#x6536;Event&#x7684;&#x7F13;&#x51B2;&#x961F;&#x5217;&#x957F;&#x4E3A;1000&#xFF0C;&#x4E0D;&#x505C;&#x5730;&#x53D6;&#x8D70;Event&#x5E76;&#x5E7F;&#x64AD;&#x7ED9;&#x5404;&#x4E2A;watcher;</span>
+    <span class="hljs-comment">//watcher&#x901A;&#x8FC7;recordEvent()&#x65B9;&#x6CD5;&#x5C06;Event&#x5199;&#x5165;&#x5BF9;&#x5E94;&#x7684;EventSink&#x91CC;&#xFF0C;&#x6700;&#x5927;&#x91CD;&#x8BD5;&#x6B21;&#x6570;&#x4E3A;12&#x6B21;&#xFF0C;&#x91CD;&#x8BD5;&#x95F4;&#x9694;&#x968F;&#x673A;&#x751F;&#x6210;(&#x89C1;staging/src/k8s.io/client-go/tools/record/event.go);</span>
+    <span class="hljs-comment">// EnventSink  &#x5C06;&#x5728;ProxyServer.Run() &#x4E2D;&#x8C03;&#x7528;s.Broadcaster.StartRecordingToSink&#xFF08;&#xFF09; &#x4F20;&#x8FDB;&#x6765;;</span>
+    <span class="hljs-comment">// NewBroadcaster() &#x6700;&#x540E;&#x4F1A;&#x542F;&#x52A8;&#x4E00;&#x4E2A;goroutine &#x8FD0;&#x884C;Loop &#x65B9;&#x6CD5;&#xFF08;staging/src/k8s.io/apimachinery/pkg/watch/mux.go),</span>
+    eventBroadcaster := record.NewBroadcaster()
+
+    <span class="hljs-comment">//EventRecorder&#x901A;&#x8FC7;generateEvent()&#x5B9E;&#x9645;&#x751F;&#x6210;&#x5404;&#x79CD;Event&#xFF0C;&#x5E76;&#x5C06;&#x5176;&#x6DFB;&#x52A0;&#x5230;&#x76D1;&#x89C6;&#x961F;&#x5217;&#x3002;</span>
+    recorder := eventBroadcaster.NewRecorder(scheme, v1.EventSource{Component: <span class="hljs-string">&quot;kube-proxy&quot;</span>, Host: hostname})
+    ...
+    <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(config.HealthzBindAddress) &gt; <span class="hljs-number">0</span> {<span class="hljs-comment">//&#x670D;&#x52A1;&#x5065;&#x5EB7;&#x68C0;&#x67E5;&#x7684; IP &#x5730;&#x5740;&#x548C;&#x7AEF;&#x53E3;&#xFF08;IPv4&#x9ED8;&#x8BA4;&#x4E3A;0.0.0.0:10256&#xFF0C;&#x5BF9;&#x4E8E;&#x6240;&#x6709; IPv6 &#x63A5;&#x53E3;&#x8BBE;&#x7F6E;&#x4E3A; ::&#xFF09;</span>
+        healthzServer = healthcheck.NewDefaultHealthzServer(config.HealthzBindAddress, <span class="hljs-number">2</span>*config.IPTables.SyncPeriod.Duration, recorder, nodeRef)
+        healthzUpdater = healthzServer
+    }
+    ...
+    proxyMode := getProxyMode(<span class="hljs-keyword">string</span>(config.Mode), iptInterface, kernelHandler, ipsetInterface, iptables.LinuxKernelCompatTester{})
+    ...
+    <span class="hljs-keyword">if</span> proxyMode == proxyModeIPTables { 
+        klog.V(<span class="hljs-number">0</span>).Info(<span class="hljs-string">&quot;Using iptables Proxier.&quot;</span>)
+        <span class="hljs-keyword">if</span> config.IPTables.MasqueradeBit == <span class="hljs-literal">nil</span> {
+            <span class="hljs-comment">// MasqueradeBit must be specified or defaulted.</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, fmt.Errorf(<span class="hljs-string">&quot;unable to read IPTables MasqueradeBit from config&quot;</span>)
+        }
+
+        <span class="hljs-comment">// &#x8FD4;&#x56DE;&#x4E00;&#x4E2A;Proxier &#x7ED3;&#x6784;&#x4F53;&#x5B9E;&#x4F8B; </span>
+        proxierIPTables, err := iptables.NewProxier(...) <span class="hljs-comment">//&#x53C2;&#x6570;&#x7565;</span>
+        <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, fmt.Errorf(<span class="hljs-string">&quot;unable to create proxier: %v&quot;</span>, err)
+        }
+        metrics.RegisterMetrics()
+        proxier = proxierIPTables
+        <span class="hljs-comment">// Iptables Proxier &#x5B9E;&#x73B0;&#x4E86; ServiceHandler &#x548C; EndpointsHandler &#x7684;&#x63A5;&#x53E3;&#x3002;</span>
+        serviceEventHandler = proxierIPTables  
+        endpointsEventHandler = proxierIPTables
+
+        userspace.CleanupLeftovers(iptInterface)<span class="hljs-comment">// &#x65E0;&#x6761;&#x4EF6;&#x5F3A;&#x5236;&#x6E05;&#x9664;&#x4E4B;&#x524D;userspace &#x6A21;&#x5F0F;&#x7684;&#x89C4;&#x5219;</span>
+
+        <span class="hljs-comment">// &#x56E0;&#x4E3A;&#x65E0;&#x6CD5;&#x533A;&#x5206;iptables &#x89C4;&#x5219;&#x662F;&#x5426;&#x7531;IPVS &#x4EE3;&#x7406;&#x751F;&#x6210;&#xFF0C;&#x56E0;&#x6B64;&#x7531;&#x7528;&#x6237;&#x6839;&#x636E;&#x5B9E;&#x9645;&#x60C5;&#x51B5;&#x51B3;&#x5B9A;&#x662F;&#x5426;&#x8C03;&#x7528;ipvs.CleanupLeftovers()</span>
+        <span class="hljs-keyword">if</span> canUseIPVS {
+            ipvs.CleanupLeftovers(ipvsInterface, iptInterface, ipsetInterface, cleanupIPVS)
+        }
+    } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> proxyMode == proxyModeIPVS {<span class="hljs-comment">// &#x521D;&#x59CB;&#x5316;IPVS Proxier</span>
+
+    } <span class="hljs-keyword">else</span> { <span class="hljs-comment">// &#x521D;&#x59CB;&#x5316; userspace Proxier</span>
+
+    }
+
+    iptInterface.AddReloadFunc(proxier.Sync)
+
+    <span class="hljs-keyword">return</span> &amp;ProxyServer{ <span class="hljs-comment">// &#x8D4B;&#x503C;&#x8FC7;&#x7A0B;&#x7565;</span>
+    ...
+    }, <span class="hljs-literal">nil</span>
+}
+</code></pre>
+<h2 id="proxier-&#x521D;&#x59CB;&#x5316;">Proxier &#x521D;&#x59CB;&#x5316;</h2>
+<p>kubernetes/pkg/proxy/iptables/proxier.go</p>
+<pre><code class="lang-go"><span class="hljs-keyword">func</span> NewProxier(...) (*Proxier, error) { <span class="hljs-comment">//&#x53C2;&#x6570;&#x7565;</span>
+    ...
+    <span class="hljs-comment">//kube-proxy&#x8981;&#x6C42;NODE&#x8282;&#x70B9;&#x64CD;&#x4F5C;&#x7CFB;&#x7EDF;&#x4E2D;&#x6709;/sys/module/br_netfilter&#x6A21;&#x5757;&#xFF0C;&#x8FD8;&#x8981;&#x8BBE;&#x7F6E;bridge-nf-call-iptables=1&#xFF1B;</span>
+    <span class="hljs-comment">//&#x5982;&#x679C;&#x4E0D;&#x6EE1;&#x8DB3;&#x8981;&#x6C42;&#xFF0C;kube-proxy&#x5728;&#x8FD0;&#x884C;&#x8FC7;&#x7A0B;&#x4E2D;&#x8BBE;&#x7F6E;&#x7684;&#x67D0;&#x4E9B;iptables&#x89C4;&#x5219;&#x5C31;&#x4E0D;&#x4F1A;&#x5DE5;&#x4F5C;&#x3002; </span>
+    <span class="hljs-keyword">if</span> val, err := sysctl.GetSysctl(sysctlBridgeCallIPTables); err == <span class="hljs-literal">nil</span> &amp;&amp; val != <span class="hljs-number">1</span> {
+        klog.Warning(<span class="hljs-string">&quot;missing br-netfilter module or unset sysctl br-nf-call-iptables; proxy may not work as intended&quot;</span>)
+    }
+
+    <span class="hljs-comment">// Generate the masquerade mark to use for SNAT rules.</span>
+    masqueradeValue := <span class="hljs-number">1</span> &lt;&lt; <span class="hljs-keyword">uint</span>(masqueradeBit) <span class="hljs-comment">//masqueradeBit: Default 14</span>
+    <span class="hljs-comment">// &#x8F93;&#x51FA;&#x4E00;&#x4E2A;8&#x4F4D;16&#x8FDB;&#x5236;&#x6570;&#x503C; &#xFF0C;&#x9ED8;&#x8BA4;&#x5373;0x00004000/0x00004000,&#x7528;&#x6765;&#x6807;&#x8BB0;k8s&#x7BA1;&#x7406;&#x7684;&#x62A5;&#x6587;&#x3002;</span>
+    <span class="hljs-comment">//&#x6807;&#x8BB0; 0x4000&#x7684;&#x62A5;&#x6587;&#xFF08;&#x5373;POD&#x53D1;&#x51FA;&#x7684;&#x62A5;&#x6587;)&#xFF0C;&#x5728;&#x79BB;&#x5F00;Node&#xFF08;&#x7269;&#x7406;&#x673A;&#xFF09;&#x7684;&#x65F6;&#x5019;&#x9700;&#x8981;&#x8FDB;&#x884C;SNAT&#x8F6C;&#x6362;&#x3002;</span>
+    masqueradeMark := fmt.Sprintf(<span class="hljs-string">&quot;%#08x/%#08x&quot;</span>, masqueradeValue, masqueradeValue) 
+
+    healthChecker := healthcheck.NewServer(hostname, recorder, <span class="hljs-literal">nil</span>, <span class="hljs-literal">nil</span>) <span class="hljs-comment">// use default implementations of deps</span>
+
+    isIPv6 := ipt.IsIpv6()
+    proxier := &amp;Proxier{
+        portsMap:                 <span class="hljs-built_in">make</span>(<span class="hljs-keyword">map</span>[utilproxy.LocalPort]utilproxy.Closeable),
+        serviceMap:               <span class="hljs-built_in">make</span>(proxy.ServiceMap),
+        serviceChanges:           proxy.NewServiceChangeTracker(newServiceInfo, &amp;isIPv6, recorder),
+        endpointsMap:             <span class="hljs-built_in">make</span>(proxy.EndpointsMap),
+        endpointsChanges:         proxy.NewEndpointChangeTracker(hostname, newEndpointInfo, &amp;isIPv6, recorder),
+        iptables:                 ipt,
+        masqueradeAll:            masqueradeAll,<span class="hljs-comment">// &#x5982;&#x679C;&#x4F7F;&#x7528;&#x7EAF; iptables &#x4EE3;&#x7406;&#xFF0C;SNAT &#x6240;&#x6709;&#x901A;&#x8FC7;&#x670D;&#x52A1; IP &#x53D1;&#x9001;&#x7684;&#x6D41;&#x91CF;&#xFF0C;&#x9ED8;&#x8BA4;False</span>
+        masqueradeMark:           masqueradeMark,
+        exec:                     exec,
+        clusterCIDR:              clusterCIDR,
+        hostname:                 hostname,
+        nodeIP:                   nodeIP,
+        portMapper:               &amp;listenPortOpener{},
+        recorder:                 recorder,
+        healthChecker:            healthChecker,
+        healthzServer:            healthzServer,
+        precomputedProbabilities: <span class="hljs-built_in">make</span>([]<span class="hljs-keyword">string</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1001</span>),
+        iptablesData:             bytes.NewBuffer(<span class="hljs-literal">nil</span>),
+        existingFilterChainsData: bytes.NewBuffer(<span class="hljs-literal">nil</span>),
+        filterChains:             bytes.NewBuffer(<span class="hljs-literal">nil</span>),
+        filterRules:              bytes.NewBuffer(<span class="hljs-literal">nil</span>),
+        natChains:                bytes.NewBuffer(<span class="hljs-literal">nil</span>),
+        natRules:                 bytes.NewBuffer(<span class="hljs-literal">nil</span>),
+        nodePortAddresses:        nodePortAddresses,
+        networkInterfacer:        utilproxy.RealNetwork{},
+    }
+    burstSyncs := <span class="hljs-number">2</span>
+    ...
+    <span class="hljs-comment">//Default: syncPeriod=30s (--iptables-sync-period duration)&#xFF0C;&#x5C06;proxier.syncProxyRules &#x6258;&#x7BA1;&#x81F3;BoundedFrequencyRunner &#x7ED3;&#x6784;&#x4F53;&#xFF0C;</span>
+    <span class="hljs-comment">//BoundedFrequencyRunner &#x4E2D;&#x542B;&#x6709;&#x4E00;&#x4E2A;Limiter &#xFF0C;&#x8BE5;Limiter &#x91C7;&#x7528;&quot;&#x6876;&#x4EE4;&#x724C;&quot; &#x9650;&#x6D41;&#x7B97;&#x6CD5;&#x63A7;&#x5236;proxier.syncProxyRules &#x65B9;&#x6CD5;&#x8FD0;&#x884C;&#x7684;&#x9891;&#x7387;&#x3002;</span>
+    <span class="hljs-comment">//minSyncPeriod=0 &#x65F6;&#xFF0C;&#x65E0;&#x901F;&#x7387;&#x9650;&#x5236;&#x3002;&#x9650;&#x6D41;&#x65F6;&#xFF0C;&#x6876;&#x7C7B;&#x521D;&#x59CB;&#x4EE4;&#x724C;&#x6570;&#x91CF;&#x4E3A;burstSyncs&#x3002;</span>
+    proxier.syncRunner = async.NewBoundedFrequencyRunner(<span class="hljs-string">&quot;sync-runner&quot;</span>, proxier.syncProxyRules, minSyncPeriod, syncPeriod, burstSyncs)
+    <span class="hljs-keyword">return</span> proxier, <span class="hljs-literal">nil</span>
+}
+</code></pre>
+<h2 id="&#x6CE8;&#x518C;resourcehandler">&#x6CE8;&#x518C;ResourceHandler</h2>
+<p>ProxyServer &#x53CA;Proxier &#x8FD9;&#x4E24;&#x4E2A;&#x91CD;&#x8981;&#x7684;&#x7ED3;&#x6784;&#x4F53;&#x521D;&#x59CB;&#x5316;&#x5B8C;&#x6210;&#x4EE5;&#x540E;&#xFF0C;&#x5C31;&#x8FDB;&#x5165;&#x4E86;proxyServer.Run() &#x65B9;&#x6CD5;&#x3002;&#x5728;Run() &#x65B9;&#x6CD5;&#x4E2D;&#xFF0C;&#x5927;&#x81F4;&#x505A;&#x4E86;&#x5982;&#x4E0B;&#x5DE5;&#x4F5C;&#xFF1A;</p>
+<ol>
+<li><p>&#x51C6;&#x5907;&#x5DE5;&#x4F5C;&#xFF0C;&#x5982;&#x8BBE;&#x7F6E;OOMScoreAdj,  &#x6CE8;&#x518C;service &#x548C;endpoints &#x7684;&#x5904;&#x7406;&#x65B9;&#x6CD5;</p>
+</li>
+<li><p>&#x4F7F;&#x7528;list-watch &#x673A;&#x5236;&#x5BF9;service&#xFF0C;endpoints&#x8D44;&#x6E90;&#x76D1;&#x542C;&#x3002;</p>
+</li>
+<li><p>&#x6700;&#x540E;&#x8FDB;&#x5165;&#x4E00;&#x4E2A;&#x65E0;&#x9650;&#x5FAA;&#x73AF;&#xFF0C;&#x5BF9;service&#x4E0E;endpoints&#x7684;&#x53D8;&#x5316;&#x8FDB;&#x884C;iptables&#x89C4;&#x5219;&#x7684;&#x540C;&#x6B65;&#x3002;</p>
+</li>
+</ol>
+<p>&#x5728;Run&#x65B9;&#x6CD5;&#x4E2D;&#xFF0C;&#x4E3B;&#x8981;&#x5173;&#x6CE8;&#x4E00;&#x4E0B;&#x5BF9;service &#x548C;endpoints&#x8D44;&#x6E90;&#x53D8;&#x5316;&#x7684;&#x5904;&#x7406;&#x65B9;&#x6CD5;&#x7684;&#x6CE8;&#x518C;&#x8FC7;&#x7A0B;&#x3002;</p>
+<p>kubernetes/cmd/proxy-server/app/server.go</p>
+<pre><code class="lang-go"><span class="hljs-keyword">func</span> (s *ProxyServer) Run() error {
+    ...
+
+    <span class="hljs-comment">//&#x5728;&#x7528;&#x6237;&#x7A7A;&#x95F4;&#x901A;&#x8FC7;&#x5199;oomScoreAdj&#x53C2;&#x6570;&#x5230;/proc/self/oom_score_adj&#x6587;&#x4EF6;&#x6765;&#x6539;&#x53D8;&#x8FDB;&#x7A0B;&#x7684; oom_adj &#x5185;&#x6838;&#x53C2;&#x6570;&#xFF1B;</span>
+    <span class="hljs-comment">//oom_adj&#x7684;&#x503C;&#x7684;&#x5927;&#x5C0F;&#x51B3;&#x5B9A;&#x4E86;&#x8FDB;&#x7A0B;&#x88AB; OOM killer&#xFF0C;&#x53D6;&#x503C;&#x8303;&#x56F4;[-1000,1000] &#x9009;&#x4E2D;&#x6740;&#x6389;&#x7684;&#x6982;&#x7387;,&#x503C;&#x8D8A;&#x4F4E;&#x8D8A;&#x4E0D;&#x5BB9;&#x6613;&#x88AB;&#x6740;&#x6B7B;.&#x6B64;&#x5904;&#x9ED8;&#x8BA4;&#x503C;&#x662F;-999&#x3002;</span>
+    <span class="hljs-keyword">if</span> s.OOMScoreAdj != <span class="hljs-literal">nil</span> { 
+        oomAdjuster = oom.NewOOMAdjuster() 
+        <span class="hljs-keyword">if</span> err := oomAdjuster.ApplyOOMScoreAdj(<span class="hljs-number">0</span>, <span class="hljs-keyword">int</span>(*s.OOMScoreAdj)); err != <span class="hljs-literal">nil</span> {
+            klog.V(<span class="hljs-number">2</span>).Info(err)
+        }
+    }
+
+    <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(s.ResourceContainer) != <span class="hljs-number">0</span> {
+        ...
+        <span class="hljs-comment">//</span>
+        resourcecontainer.RunInResourceContainer(s.ResourceContainer); 
+        ...
+    }
+
+    <span class="hljs-keyword">if</span> s.Broadcaster != <span class="hljs-literal">nil</span> &amp;&amp; s.EventClient != <span class="hljs-literal">nil</span> {
+        <span class="hljs-comment">// EventSinkImpl &#x5305;&#x88C5;&#x4E86;&#x5904;&#x7406;event &#x7684;&#x65B9;&#x6CD5;create ,update, patchs</span>
+        <span class="hljs-comment">//s.Broadcaster &#x5DF2;&#x7ECF;&#x5728;ProxyServer &#x521D;&#x59CB;&#x5316;&#x4E2D;&#x4F5C;&#x4E3A;&#x4E00;&#x4E2A;goroutine &#x5728;&#x8FD0;&#x884C;&#x3002;</span>
+        s.Broadcaster.StartRecordingToSink(&amp;v1core.EventSinkImpl{Interface: s.EventClient.Events(<span class="hljs-string">&quot;&quot;</span>)})
+    }
+
+    <span class="hljs-comment">// Start up a healthz server if requested</span>
+    <span class="hljs-keyword">if</span> s.HealthzServer != <span class="hljs-literal">nil</span> {
+        s.HealthzServer.Run()
+    }
+
+    <span class="hljs-comment">// Start up a metrics server if requested</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(s.MetricsBindAddress) &gt; <span class="hljs-number">0</span> {
+    ...
+    }
+
+    <span class="hljs-comment">// Tune conntrack, if requested</span>
+    <span class="hljs-comment">// Conntracker is always nil for windows</span>
+    <span class="hljs-keyword">if</span> s.Conntracker != <span class="hljs-literal">nil</span> {
+        max, err := getConntrackMax(s.ConntrackConfiguration)
+        ...
+    }
+    <span class="hljs-comment">// Default: s.ConfigSyncPeriod =15m (--config-sync-period)</span>
+    <span class="hljs-comment">//&#x8FD4;&#x56DE;&#x4E00;&#x4E2A;sharedInformerFactory&#x7ED3;&#x6784;&#x4F53;&#x5B9E;&#x4F8B;(staing/src/k8s.io/client-go/informers/factory.go)</span>
+    informerFactory := informers.NewSharedInformerFactory(s.Client, s.ConfigSyncPeriod)
+
+
+    <span class="hljs-comment">//ServiceConfig&#x7ED3;&#x6784;&#x4F53;&#x8DDF;&#x8E2A;&#x8BB0;&#x5F55;Service&#x914D;&#x7F6E;&#x4FE1;&#x606F;&#x7684;&#x53D8;&#x5316;</span>
+    <span class="hljs-comment">//informerFactory.Core().V1().Services() &#x8FD4;&#x56DE;&#x4E00;&#x4E2A; serviceInformer &#x7ED3;&#x6784;&#x4F53;&#x5F15;&#x7528;(staing/src/k8s.io/client-go/informers/core/v1/service.go</span>
+    serviceConfig := config.NewServiceConfig(informerFactory.Core().V1().Services(), s.ConfigSyncPeriod)
+
+    <span class="hljs-comment">//RegisterEventHandler &#x662F;&#x5C06;Service&#x7684;&#x5904;&#x7406;&#x65B9;&#x6CD5;&#x8FFD;&#x52A0;&#x5230;serviceConfig&#x7684;eventHandlers &#x4E2D;&#xFF0C;eventHandlers&#x4E3A;&#x4E00;&#x4E2A;&#x5217;&#x8868;&#xFF0C;&#x5143;&#x7D20;&#x7C7B;&#x578B;ServiceHandler&#x63A5;&#x53E3;</span>
+    <span class="hljs-comment">// ServiceHandler&#x63A5;&#x53E3;&#x5B9A;&#x4E49;&#x4E86;&#x6BCF;&#x4E2A;hanlder &#x5904;&#x7406;service&#x7684;api&#x65B9;&#x6CD5;:OnServiceAdd,OnServiceUpdate,OnServiceDelete,OnServiceSynced</span>
+    <span class="hljs-comment">// &#x6B64;&#x5904;s.ServiceEventHandler &#x4E3A;proxier&#xFF0C;proxier&#x5B9E;&#x73B0;&#x4E86;ServiceHandler&#x63A5;&#x53E3;&#x5B9A;&#x4E49;&#x7684;&#x65B9;&#x6CD5;</span>
+    <span class="hljs-comment">//serviceConfig &#x4E2D;&#x7684;handleAddService,handleUpdateService,handleDeleteService &#x5C06;&#x4F1A;&#x8C03;&#x7528;&#x6BCF;&#x4E2A;eventHandler&#x7684;OnServiceAdd&#x7B49;&#x65B9;&#x6CD5;</span>
+    serviceConfig.RegisterEventHandler(s.ServiceEventHandler)
+    <span class="hljs-keyword">go</span> serviceConfig.Run(wait.NeverStop)  <span class="hljs-comment">//&#x521D;&#x59CB;&#x5316;&#x540C;&#x6B65;service,&#x8C03;&#x7528;&#x4E86;&#x4E00;&#x6B21;proxier.syncProxyRules()</span>
+
+    endpointsConfig := config.NewEndpointsConfig(informerFactory.Core().V1().Endpoints(), s.ConfigSyncPeriod)
+    endpointsConfig.RegisterEventHandler(s.EndpointsEventHandler)
+    <span class="hljs-keyword">go</span> endpointsConfig.Run(wait.NeverStop)
+
+    <span class="hljs-comment">// This has to start after the calls to NewServiceConfig and NewEndpointsConfig because those</span>
+    <span class="hljs-comment">// functions must configure their shared informer event handlers first.</span>
+    <span class="hljs-keyword">go</span> informerFactory.Start(wait.NeverStop)
+
+    <span class="hljs-comment">// Birth Cry after the birth is successful</span>
+    s.birthCry()
+
+    <span class="hljs-comment">// Just loop forever for now...</span>
+    s.Proxier.SyncLoop()
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>
+}
+</code></pre>
+<p>&#x4E0A;&#x9762;&#x4EE5;&#x6CE8;&#x91CA;&#x7684;&#x65B9;&#x5F0F;&#x63CF;&#x8FF0;&#x4E86;proxier&#x4E2D;service&#x5904;&#x7406;&#x65B9;&#x6CD5;&#x7684;&#x88AB;&#x8C03;&#x7528;&#x6D41;&#x7A0B;&#xFF1A;&#x901A;&#x8FC7;serviceConfig.RegisterEventHandler()&#x65B9;&#x6CD5;&#x5B9E;&#x73B0;&#x4E86;&#x5728;serviceConfig&#x4E2D;&#x7684;handleAddService()&#x7B49;&#x65B9;&#x6CD5;&#x4E2D;&#x8C03;&#x7528;proxier&#x4E2D;&#x7684;OnServiceAdd()&#x7B49;&#x5BF9;&#x5E94;&#x7684;&#x65B9;&#x6CD5;&#x3002;&#x90A3;&#x4E48;serviceConfig.handleAddService()&#x7B49;&#x65B9;&#x6CD5;&#x662F;&#x5728;&#x54EA;&#x91CC;&#x4EE5;&#x53CA;&#x4F55;&#x65F6;&#x88AB;&#x8C03;&#x7528;&#x7684;&#x5462;&#xFF1F;&#x518D;&#x6B21;&#x56DE;&#x770B;serviceConfig&#x7684;&#x5B9E;&#x4F8B;&#x5316;&#x65B9;&#x6CD5; NewServiceConfig() &#x6316;&#x6398;handleAddService()&#x7684;&#x88AB;&#x8C03;&#x7528;&#x5904;&#x3002;</p>
+<p>kubernetes/pkg/proxy/config/config.go</p>
+<pre><code class="lang-go"><span class="hljs-keyword">func</span> NewServiceConfig(serviceInformer coreinformers.ServiceInformer, resyncPeriod time.Duration) *ServiceConfig {
+    result := &amp;ServiceConfig{
+        lister:       serviceInformer.Lister(),
+        listerSynced: serviceInformer.Informer().HasSynced,
+    }
+    <span class="hljs-comment">//&#x7ED3;&#x6784;&#x4F53;cache.ResourceEventHandlerFuncs &#x662F;&#x4E00;&#x4E2A;ResourceEventHandler&#x63A5;&#x53E3;&#x7C7B;&#x578B;(staing/src/k8s.io/client-go/tools/cache/controller.go)</span>
+    <span class="hljs-comment">//&#x5C06;ServicConfig &#x7ED3;&#x6784;&#x4F53;&#x7684;handleAddService &#x7B49;&#x65B9;&#x6CD5;&#x8D4B;&#x4E88;&#x4E86;cache.ResourceEventHandlerFuncs,&#x5B9E;&#x73B0;&#x4E00;&#x4E2A;ResourceEventHandler&#x5B9E;&#x4F8B;</span>
+    <span class="hljs-comment">//serviceInformer.Informer() &#x8FD4;&#x56DE;&#x4E00;&#x4E2A;sharedIndexInformer &#x5B9E;&#x4F8B;(staing/src/k8s.io/client-go/tools/cache/shared_informer.go)</span>
+    <span class="hljs-comment">//&#x901A;&#x8FC7;AddEventHandlerWithResyncPeriod() &#x65B9;&#x6CD5;&#xFF0C;&#x5C06;ResourceEventHandler&#x5B9E;&#x4F8B;&#x8D4B;&#x503C;&#x7ED9;processorListener&#x7ED3;&#x6784;&#x4F53;&#x7684;handler&#x5C5E;&#x6027;</span>
+    serviceInformer.Informer().AddEventHandlerWithResyncPeriod(
+        cache.ResourceEventHandlerFuncs{
+            AddFunc:    result.handleAddService,
+            UpdateFunc: result.handleUpdateService,
+            DeleteFunc: result.handleDeleteService,
+        },
+        resyncPeriod,
+    )
+    <span class="hljs-keyword">return</span> result
+}
+</code></pre>
+<p>&#x770B;&#x5B8C;&#x4E0A;&#x9762;&#x7684;&#x6CE8;&#x91CA;&#xFF0C;&#x5927;&#x6982;&#x5C31;&#x660E;&#x767D;&#x4E86;proxier &#x4E2D;&#x7684;OnServiceAdd() &#x7B49;&#x6CD5;&#x6CD5;&#x7684;&#x8C03;&#x7528;&#x6D41;&#x7A0B;
+&#x5728;&#x4E0A;&#x8FB9;&#x4EE3;&#x7801;serviceInformer.Informer()&#x8FD4;&#x56DE;&#x4E4B;&#x524D;&#xFF0C;&#x8FD8;&#x5C06;&#x8C03;&#x7528;InformerFor()&#x65B9;&#x6CD5;&#x7ED9;informerFactory&#x7684;informers&#x5C5E;&#x6027;&#x8D4B;&#x503C;<code>f.informers[informerType] = informer</code>, &#x6B64;&#x884C;&#x4EE3;&#x7801;&#x7684;&#x610F;&#x4E49;&#x53EF;&#x7406;&#x89E3;&#x4E3A;&#xFF1A;&#x4ECE;api server &#x76D1;&#x542C;&#x5230; informerType&#x7C7B;&#x578B;&#x8D44;&#x6E90;&#x53D8;&#x5316;&#x7684;&#x5904;&#x7406;&#x8005;&#x8BB0;&#x5F55;(&#x6620;&#x5C04;)&#x4E3A;informer&#x3002;&#x6B64;&#x5904;&#x7684;&#x8D44;&#x6E90;&#x7C7B;&#x578B;&#x5373;&#x4E3A;service, informer &#x4FBF;&#x4E3A;sharedIndexInformer&#x3002;</p>
+<p>&#x5177;&#x4F53;&#x7684;&#x8C03;&#x7528;&#x65F6;&#x673A;&#x548C;&#x6700;&#x4E0A;&#x5C42;&#x65B9;&#x6CD5;&#x5165;&#x53E3;&#x8FD8;&#x8981;&#x4ECE;informerFactory&#x8FD9;&#x4E2A;&#x4E1C;&#x897F;&#x8BF4;&#x8D77;&#xFF0C;&#x8FD9;&#x53C8;&#x662F;k8s &#x4E2D;&#x53E6;&#x4E00;&#x4E2A;&#x6BD4;&#x8F83;&#x7CFB;&#x7EDF;&#x7684;&#x516C;&#x5171;&#x7EC4;&#x4EF6;&#x7684;&#x5B9E;&#x73B0;&#x539F;&#x7406;&#x4E86;&#xFF0C;&#x5373;client-go&#x7684;SharedInformer&#x3002;</p>
+<h2 id="&#x8BB0;&#x5F55;&#x8D44;&#x6E90;&#x53D8;&#x5316;">&#x8BB0;&#x5F55;&#x8D44;&#x6E90;&#x53D8;&#x5316;</h2>
+<p>&#x4E0A;&#x9762;&#x4ECB;&#x7ECD;&#x4E86;ResourceHandler &#x7684;&#x6CE8;&#x518C;&#x53CA;&#x88AB;&#x8C03;&#x7528;&#x8FC7;&#x7A0B;&#x3002; Proxier &#x5B9E;&#x73B0;&#x4E86; services &#x548C; endpoints &#x4E8B;&#x4EF6;&#x5404;&#x79CD;&#x6700;&#x7EC8;&#x7684;&#x89C2;&#x5BDF;&#x8005;&#xFF0C;&#x6700;&#x7EC8;&#x7684;&#x4E8B;&#x4EF6;&#x89E6;&#x53D1;&#x90FD;&#x4F1A;&#x5728; proxier &#x4E2D;&#x8FDB;&#x884C;&#x5904;&#x7406;&#x3002;&#x5BF9;&#x4E8E;&#x901A;&#x8FC7;&#x76D1;&#x542C; API Server &#x53D8;&#x5316;&#x7684;&#x4FE1;&#x606F;&#xFF0C;&#x901A;&#x8FC7;&#x8C03;&#x7528;ResourceHandler&#x5C06;&#x53D8;&#x5316;&#x7684;&#x4FE1;&#x606F;&#x4FDD;&#x5B58;&#x5230; endpointsChanges &#x548C; serviceChanges&#x3002;&#x90A3;&#x4E48;&#x4E00;&#x4E2A;ResourceHandler&#x662F;&#x5982;&#x4F55;&#x5B9E;&#x73B0;&#x7684;&#x5462;&#xFF1F;service &#x548C;endpoints &#x7684;&#x53D8;&#x5316;&#x5982;&#x4F55;&#x8BB0;&#x5F55;&#x4E3A;servriceChanges &#x548C;endpointsChanges&#xFF1F;&#x56DE;&#x770B;&#x4E0A;&#x8FB9;&#x6E90;&#x7801;&#x4E2D;&#x88AB;&#x6CE8;&#x518C;&#x7684;&#x5BF9;&#x8C61;s.ServiceEventHandler&#xFF0C;s.EndpointsEventHandler&#x7684;&#x5177;&#x4F53;&#x5B9E;&#x73B0;&#x4FBF;&#x53EF;&#x660E;&#x767D;&#x3002;</p>
+<p>service &#x548C;endpoints &#x7684;&#x5904;&#x7406;&#x539F;&#x5219;&#x76F8;&#x4F3C;&#xFF0C;&#x4EE5;&#x5BF9;servcie &#x7684;&#x5904;&#x7406;&#x4E3A;&#x4F8B;&#xFF0C;&#x770B;&#x4E00;&#x4E0B;&#x5BF9;service &#x7684;&#x5904;&#x7406;&#x65B9;&#x6CD5;&#x3002;</p>
+<p>pkg/proxy/iptables/proxier.go</p>
+<pre><code class="lang-go"><span class="hljs-keyword">func</span> (proxier *Proxier) OnServiceAdd(service *v1.Service) { 
+    proxier.OnServiceUpdate(<span class="hljs-literal">nil</span>, service)
+}
+
+<span class="hljs-keyword">func</span> (proxier *Proxier) OnServiceUpdate(oldService, service *v1.Service) {
+    <span class="hljs-keyword">if</span> proxier.serviceChanges.Update(oldService, service) &amp;&amp; proxier.isInitialized() {
+        proxier.syncRunner.Run() <span class="hljs-comment">// &#x901A;&#x8FC7;channel &#x53D1;&#x9001;&#x4E00;&#x4E2A;&#x4FE1;&#x53F7;&#xFF0C;&#x8C03;&#x7528;tryRun()</span>
+    }
+}
+
+<span class="hljs-keyword">func</span> (proxier *Proxier) OnServiceDelete(service *v1.Service) { 
+    proxier.OnServiceUpdate(service, <span class="hljs-literal">nil</span>)
+</code></pre>
+<p>&#x4ECE;&#x4E0A;&#x8FB9;&#x4EE3;&#x7801;&#x4E2D;&#xFF0C;&#x53EF;&#x4EE5;&#x770B;&#x5230;&#xFF0C;&#x5BF9;service&#x7684;&#x5904;&#x7406;&#x65B9;&#x6CD5;&#x5927;&#x81F4;&#x5206;&#x4E3A;&#x4E09;&#x79CD;&#xFF1A;</p>
+<ol>
+<li>&#x589E;&#x52A0;&#x4E00;&#x4E2A;service</li>
+<li>&#x5220;&#x9664;&#x4E00;&#x4E2A;service</li>
+<li>&#x5904;&#x7406;&#x4E00;&#x4E2A;&#x5DF2;&#x5B58;&#x5728;&#x7684;service&#x7684;&#x53D8;&#x5316;&#x3002;</li>
+</ol>
+<p>&#x5176;&#x4E2D;&#xFF0C;&#x589E;&#x52A0;&#x3001;&#x5220;&#x9664;service &#x90FD;&#x662F;&#x7ED9;OnServiceUpdate() &#x4F20;&#x5165;&#x53C2;&#x6570;&#x540E;&#xFF0C;&#x7531;OnServiceUpdate() &#x65B9;&#x6CD5;&#x5904;&#x7406;&#x3002;&#x56E0;&#x6B64;&#xFF0C;&#x91CD;&#x70B9;&#x770B;&#x4E00;&#x4E0B;OnServiceUpdate()&#x8C03;&#x7528;&#x7684;update() &#x65B9;&#x6CD5;&#x7684;&#x5B9E;&#x73B0;&#x3002;</p>
+<p>pkg/proxy/service.go</p>
+<pre><code class="lang-go"><span class="hljs-keyword">func</span> (sct *ServiceChangeTracker) Update(previous, current *v1.Service) <span class="hljs-keyword">bool</span> {
+    svc := current
+    <span class="hljs-keyword">if</span> svc == <span class="hljs-literal">nil</span> {
+        svc = previous
+    }
+    <span class="hljs-comment">// previous == nil &amp;&amp; current == nil is unexpected, we should return false directly.</span>
+    <span class="hljs-keyword">if</span> svc == <span class="hljs-literal">nil</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>
+    }
+    namespacedName := types.NamespacedName{Namespace: svc.Namespace, Name: svc.Name}
+
+    sct.lock.Lock()
+    <span class="hljs-keyword">defer</span> sct.lock.Unlock()
+
+    change, exists := sct.items[namespacedName] 
+    <span class="hljs-keyword">if</span> !exists { <span class="hljs-comment">// &#x5728;serviceChanges &#x4E2D;&#x4E0D;&#x5B58;&#x5728;&#x4E00;&#x4E2A;&#x4EE5;namespacedName &#x4E3A;key &#x7684;&#x8D44;&#x6E90; </span>
+        change = &amp;serviceChange{}  <span class="hljs-comment">// &#x521D;&#x59CB;&#x5316;&#x4E00;&#x4E2A;serviceChange</span>
+        change.previous = sct.serviceToServiceMap(previous)
+        sct.items[namespacedName] = change
+    }
+    change.current = sct.serviceToServiceMap(current)
+    <span class="hljs-comment">// if change.previous equal to change.current, it means no change</span>
+    <span class="hljs-keyword">if</span> reflect.DeepEqual(change.previous, change.current) { <span class="hljs-comment">// &#x4ECE;update&#x4F20;&#x9012;&#x8FDB;&#x6765;&#x7684;&#x8D44;&#x6E90;&#x6CA1;&#x6709;&#x53D8;&#x5316;&#xFF0C;&#x5219;&#x4ECE;serviceChanges&#x4E2D;&#x5220;&#x9664;&#x3002;</span>
+        <span class="hljs-built_in">delete</span>(sct.items, namespacedName) 
+    }
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">len</span>(sct.items) &gt; <span class="hljs-number">0</span>
+}
+</code></pre>
+<p>update &#x65B9;&#x6CD5;&#x5C31;&#x662F;&#x6839;&#x636E;previous ,current  &#x53C2;&#x6570;&#x65B0;&#x751F;&#x6210;&#x4E00;&#x4E2A;change &#x6216;&#x8005;&#x4FEE;&#x6539;&#x4E00;&#x4E2A;&#x5B58;&#x5728;&#x7684;change&#x3002;&#x5E76;&#x4E14;&#x628A;&#x65E0;&#x53D8;&#x5316;&#x7684;&#x8D44;&#x6E90;&#x4ECE;serviceChanges &#x4E2D;&#x5220;&#x9664;&#x3002;serviceChanges.items &#x4F1A;&#x5728;&#x5C06;&#x53D8;&#x5316;&#x4FE1;&#x606F;&#x66F4;&#x65B0;&#x5230;proxier.serviceMap &#x540E;&#x6E05;&#x7A7A;&#x3002;</p>
+<h2 id="&#x9650;&#x6D41;&#x540C;&#x6B65;&#x673A;&#x5236;">&#x9650;&#x6D41;&#x540C;&#x6B65;&#x673A;&#x5236;</h2>
+<p>&#x5728;&#x5BF9;proxy server &#x5173;&#x5FC3;&#x7684;&#x8D44;&#x6E90;&#x53D8;&#x5316;&#x8FDB;&#x884C;&#x4E86;&#x76D1;&#x542C;&#x8BB0;&#x5F55;&#x4E4B;&#x540E;&#xFF0C;&#x6700;&#x540E;&#x4ECE;s.Proxier.SyncLoop()&#x8FDB;&#x5165;proxier.syncRunner.Loop()&#x65B9;&#x6CD5;&#xFF0C;&#x7531;proxier.syncRunner &#x5BF9;&#x6258;&#x7BA1;syncProxyRules() &#xFF0C;syncProxyRules() &#x5B9E;&#x73B0;&#x4E86;&#x4FEE;&#x6539;iptables&#x89C4;&#x5219;&#x7684;&#x5177;&#x4F53;&#x6D41;&#x7A0B;&#x3002;&#x6B64;&#x5904;&#x503C;&#x5F97;&#x7559;&#x610F;&#x7684;&#x662F;proxier.syncRunner&#x91C7;&#x7528;&#x201C;&#x4EE4;&#x724C;&#x6876;&#x201D;&#x7B97;&#x6CD5;&#x5B9E;&#x73B0;&#x4E86;&#x9650;&#x6D41;&#x7684;&#x540C;&#x6B65;&#x63A7;&#x5236;&#x3002;</p>
+<p>pkg/utils/async/bounded_frequency_runner.go</p>
+<pre><code class="lang-go"><span class="hljs-keyword">func</span> (bfr *BoundedFrequencyRunner) Loop(stop &lt;-<span class="hljs-keyword">chan</span> <span class="hljs-keyword">struct</span>{}) {
+    klog.V(<span class="hljs-number">3</span>).Infof(<span class="hljs-string">&quot;%s Loop running&quot;</span>, bfr.name)
+    bfr.timer.Reset(bfr.maxInterval)
+    <span class="hljs-keyword">for</span> {
+        <span class="hljs-keyword">select</span> {
+        <span class="hljs-keyword">case</span> &lt;-stop:
+            bfr.stop()
+            klog.V(<span class="hljs-number">3</span>).Infof(<span class="hljs-string">&quot;%s Loop stopping&quot;</span>, bfr.name)
+            <span class="hljs-keyword">return</span>
+        <span class="hljs-comment">//&#x5148;&#x786E;&#x8BA4;&#x662F;&#x5426;&#x5230;&#x4E86;&#x8FD0;&#x884C;&#x65F6;&#x673A;&#xFF0C;&#x5982;&#x679C;&#x53EF;&#x4EE5;&#x8FD0;&#x884C;&#xFF0C;&#x5C31;&#x8C03;&#x7528;syncProxyRules()&#xFF0C;&#x4E4B;&#x540E;&#x91CD;&#x65B0;&#x8BA1;&#x65F6;&#x3002;</span>
+        <span class="hljs-comment">//&#x5177;&#x4F53;&#x53C2;&#x8003;Timer &#x7684;&#x5B9E;&#x73B0;&#x673A;&#x5236;</span>
+        <span class="hljs-keyword">case</span> &lt;-bfr.timer.C():
+            bfr.tryRun()  
+        <span class="hljs-keyword">case</span> &lt;-bfr.run: <span class="hljs-comment">//&#x6536;&#x5230;&#x4E00;&#x4E2A;channel&#x4FE1;&#x53F7;</span>
+            bfr.tryRun()
+        }
+    }
+}
+</code></pre>
+<h2 id="&#x4FEE;&#x6539;-iptables-&#x89C4;&#x5219;">&#x4FEE;&#x6539; Iptables &#x89C4;&#x5219;</h2>
+<p>&#x4ECB;&#x7ECD;&#x4E86;&#x8D44;&#x6E90;&#x76D1;&#x542C;&#x3001;&#x8BB0;&#x5F55;&#x548C;&#x540C;&#x6B65;&#x673A;&#x5236;&#xFF0C;&#x518D;&#x6765;&#x770B;&#x4E00;&#x4E0B;kube-proxy&#x662F;&#x5982;&#x4F55;&#x5C06;&#x8D44;&#x6E90;&#x7684;&#x53D8;&#x5316;&#x53CD;&#x9988;&#x5230;iptables&#x89C4;&#x5219;&#x4E2D;&#x7684;&#x3002;&#x5728;iptables&#x7684;&#x4EE3;&#x7406;&#x6A21;&#x5F0F;&#x4E2D;&#xFF0C;syncProxyRule()&#x65B9;&#x6CD5;&#x5B9E;&#x73B0;&#x4E86;&#x4FEE;&#x6539;iptables&#x89C4;&#x5219;&#x7684;&#x7EC6;&#x8282;&#x6D41;&#x7A0B;&#x3002;&#x8D70;&#x8BFB;&#x5206;&#x6790;&#x8BE5;&#x65B9;&#x6CD5;&#xFF0C;&#x80FD;&#x5C06;&#x660E;&#x767D;&#x5728;node&#x8282;&#x70B9;&#x89C2;&#x5BDF;&#x5230;&#x7684;&#x65B0;&#x94FE;&#x53CA;&#x89C4;&#x5219;&#x4EA7;&#x751F;&#x7684;&#x65B9;&#x5F0F;&#x53CA;&#x76EE;&#x7684;&#x3002;</p>
+<p>syncProxyRules()&#x8FD9;&#x4E00;&#x5355;&#x4E2A;&#x65B9;&#x6CD5;&#x7684;&#x4EE3;&#x7801;&#x8F83;&#x957F;&#xFF08;&#x7EA6;700+ &#x884C;&#xFF09;&#xFF0C;&#x5177;&#x4F53;&#x7684;&#x7EC6;&#x8282;&#x529F;&#x80FD;&#x4E5F;&#x591A;&#xFF0C;&#x672C;&#x8282;&#x5C06;&#x5BF9;syncProxyRules()&#x91CC;&#x7684;&#x4EE3;&#x7801;&#x6267;&#x884C;&#x6D41;&#x7A0B;&#x5206;&#x5F00;&#x4ECB;&#x7ECD;&#x3002;</p>
+<ol>
+<li><p>&#x66F4;&#x65B0;proxier.endpointsMap&#xFF0C;proxier.servieMap&#x3002;</p>
+<p>proxier.serviceMap&#xFF1A;&#x628A;sercvieChanges.current &#x5199;&#x5165;proxier.serviceMap&#xFF0C;&#x518D;&#x628A;&#x5B58;&#x5728;&#x4E8E;sercvieChanges.previous &#x4F46;&#x4E0D;&#x5B58;&#x5728;&#x4E8E;sercvieChanges.current &#x7684;service &#x4ECE; proxier.serviceMap&#x4E2D;&#x5220;&#x9664;&#xFF0C;&#x5E76;&#x4E14;&#x5220;&#x9664;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x628A;&#x4F7F;&#x7528;UDP&#x534F;&#x8BAE;&#x7684;cluster_ip &#x8BB0;&#x5F55;&#x4E8E;UDPStaleClusterIP &#x3002;</p>
+<p>proxier.endpointsMap&#xFF1A;&#x628A;endpointsChanges.previous &#x4ECE;proxier.endpointsMap &#x5220;&#x9664;&#xFF0C;&#x518D;&#x628A;endpointsChanges.current &#x52A0;&#x5165;proxier.endpointsMap&#x3002;&#x628A;&#x5B58;&#x5728;&#x4E8E;endpointsChanges.previous &#x4F46;&#x4E0D;&#x5B58;&#x5728;&#x4E8E;endpointsChanges.current &#x7684;endpoint &#x7EC4;&#x88C5;&#x4E3A;ServiceEndpoint &#x7ED3;&#x6784;&#xFF0C;&#x628A;&#x8BE5;&#x7ED3;&#x6784;&#x8BB0;&#x5F55;&#x4E8E;staleEndpoints&#x3002;</p>
+</li>
+</ol>
+<p>&#x200B;       &#x5177;&#x4F53;&#x76F8;&#x5173;&#x4EE3;&#x7801;&#x6D41;&#x7A0B;&#x5982;&#x4E0B;&#xFF1A;</p>
+<pre><code class="lang-go"><span class="hljs-comment">//kubernetes/pkg/proxy/iptables/proxier.go</span>
+<span class="hljs-keyword">func</span> (proxier *Proxier) syncProxyRules() {
+    ...
+    serviceUpdateResult := proxy.UpdateServiceMap(proxier.serviceMap, proxier.serviceChanges)
+    endpointUpdateResult := proxy.UpdateEndpointsMap(proxier.endpointsMap, proxier.endpointsChanges)
+
+    staleServices := serviceUpdateResult.UDPStaleClusterIP
+
+    <span class="hljs-comment">// &#x5229;&#x7528;endpointUpdateResult.StaleServiceNames&#xFF0C;&#x518D;&#x6B21;&#x66F4;&#x65B0; staleServices</span>
+    <span class="hljs-keyword">for</span> _, svcPortName := <span class="hljs-keyword">range</span> endpointUpdateResult.StaleServiceNames {
+        <span class="hljs-keyword">if</span> svcInfo, ok := proxier.serviceMap[svcPortName]; ok &amp;&amp; svcInfo != <span class="hljs-literal">nil</span> &amp;&amp; svcInfo.GetProtocol() == v1.ProtocolUDP {
+            klog.V(<span class="hljs-number">2</span>).Infof(<span class="hljs-string">&quot;Stale udp service %v -&gt; %s&quot;</span>, svcPortName, svcInfo.ClusterIPString())
+            staleServices.Insert(svcInfo.ClusterIPString())
+        }
+    }
+    ...
+}   
+
+<span class="hljs-comment">//kubernetes/pkg/proxy/servcie.go</span>
+<span class="hljs-keyword">func</span> UpdateServiceMap(serviceMap ServiceMap, changes *ServiceChangeTracker) (result UpdateServiceMapResult) {
+    result.UDPStaleClusterIP = sets.NewString()
+    <span class="hljs-comment">// apply &#x65B9;&#x6CD5;&#x4E2D;&#xFF0C;&#x7EE7;&#x7EED;&#x8C03;&#x7528;&#x4E86;merge&#xFF0C;filter, umerge</span>
+    <span class="hljs-comment">// merge:&#x5C06;change.current&#x7684;servicemap &#x4FE1;&#x606F;&#x5408;&#x5165;proxier.servicemap&#x4E2D;&#x3002;</span>
+    <span class="hljs-comment">// filter:&#x5C06;change.previous&#x548C;change.current&#x5171;&#x540C;&#x5B58;&#x5728;&#x7684;servicemap&#x4ECE;&#x5C06;change.previous&#x5220;&#x9664;</span>
+    <span class="hljs-comment">// unmerge: &#x5C06;change.previous &#x4E2D;&#x4F7F;&#x7528;UDP &#x7684;servicemap &#x4ECE; proxier.serviceMap &#x4E2D;&#x5220;&#x9664;&#xFF0C;&#x5E76;&#x8BB0;&#x5F55;&#x5220;&#x9664;&#x7684;&#x670D;&#x52A1;IP &#x5230;UDPStaleClusterIP</span>
+    <span class="hljs-comment">//apply&#x4E2D;&#x6700;&#x540E;&#x91CD;&#x7F6E;&#x4E86;proxy.serviceChanges.items</span>
+    serviceMap.apply(changes, result.UDPStaleClusterIP)
+
+    <span class="hljs-comment">//HCServiceNodePorts &#x4FDD;&#x5B58;proxier.serviceMap &#x4E2D;&#x6240;&#x6709;&#x670D;&#x52A1;&#x7684;&#x5065;&#x5EB7;&#x68C0;&#x67E5;&#x7AEF;&#x53E3;</span>
+    result.HCServiceNodePorts = <span class="hljs-built_in">make</span>(<span class="hljs-keyword">map</span>[types.NamespacedName]<span class="hljs-keyword">uint16</span>)
+    <span class="hljs-keyword">for</span> svcPortName, info := <span class="hljs-keyword">range</span> serviceMap {
+        <span class="hljs-keyword">if</span> info.GetHealthCheckNodePort() != <span class="hljs-number">0</span> {
+            result.HCServiceNodePorts[svcPortName.NamespacedName] = <span class="hljs-keyword">uint16</span>(info.GetHealthCheckNodePort())
+        }
+    }
+    <span class="hljs-keyword">return</span> result
+}
+
+<span class="hljs-comment">//kubernetes/pkg/proxy/endpoints.go</span>
+<span class="hljs-keyword">func</span> UpdateEndpointsMap(endpointsMap EndpointsMap, changes *EndpointChangeTracker) (result UpdateEndpointMapResult) {
+    result.StaleEndpoints = <span class="hljs-built_in">make</span>([]ServiceEndpoint, <span class="hljs-number">0</span>)
+    result.StaleServiceNames = <span class="hljs-built_in">make</span>([]ServicePortName, <span class="hljs-number">0</span>)
+
+    <span class="hljs-comment">//&#x4ECE;proixer.endpointsMap &#x4E2D;&#x5220;&#x9664;&#x548C;change.previous &#x76F8;&#x540C;&#x7684;elelment.</span>
+    <span class="hljs-comment">// &#x5C06;change.current &#x6DFB;&#x52A0;&#x81F3;proixer.endpointsMap</span>
+    <span class="hljs-comment">// StaleEndpoints &#x4FDD;&#x5B58;&#x4E86;&#x5B58;&#x5728;&#x4E8E;previous &#x4F46;&#x4E0D;&#x5B58;&#x5728;current&#x7684;endpoints</span>
+    <span class="hljs-comment">// StaleServicenames&#x4FDD;&#x5B58;&#x4E86;&#x4E00;&#x79CD;ServicePortName,&#x8FD9;&#x6837;&#x7684;ServicePortName&#x5728;change.previous&#x4E0D;&#x5B58;&#x5728;&#x5BF9;&#x5E94;&#x7684;endpoints&#xFF0C;&#x5728;change.current&#x5B58;&#x5728;endpoints&#x3002;</span>
+    <span class="hljs-comment">// &#x6700;&#x540E;&#x91CD;&#x7F6E;&#x4E86;&#x4E86;proxy.endpointsChanges.items</span>
+    endpointsMap.apply(changes, &amp;result.StaleEndpoints, &amp;result.StaleServiceNames)
+
+    <span class="hljs-comment">// computing this incrementally similarly to endpointsMap.</span>
+    result.HCEndpointsLocalIPSize = <span class="hljs-built_in">make</span>(<span class="hljs-keyword">map</span>[types.NamespacedName]<span class="hljs-keyword">int</span>)
+    localIPs := GetLocalEndpointIPs(endpointsMap)
+    <span class="hljs-keyword">for</span> nsn, ips := <span class="hljs-keyword">range</span> localIPs {
+        result.HCEndpointsLocalIPSize[nsn] = <span class="hljs-built_in">len</span>(ips)
+    }
+    <span class="hljs-keyword">return</span> result
+}
+</code></pre>
+<ol>
+<li><p>&#x5728;&#x51C6;&#x597D;&#x4E86;&#x66F4;&#x65B0;iptables&#x9700;&#x8981;&#x7684;&#x8D44;&#x6E90;&#x53D8;&#x91CF;&#x540E;&#xFF0C;&#x63A5;&#x4E0B;&#x6765;&#x5C31;&#x662F;&#x8C03;&#x7528;iptables &#x547D;&#x4EE4;&#x5EFA;&#x7ACB;&#x4E86;&#x81EA;&#x5B9A;&#x4E49;&#x94FE;&#xFF0C;&#x5E76;&#x5728;&#x5BF9;&#x5E94;&#x7684;&#x5185;&#x6838;&#x94FE;&#x4E0A;&#x5F15;&#x7528;&#x8FD9;&#x4E9B;&#x81EA;&#x5B9A;&#x4E49;&#x94FE;&#x3002;&#x8FD9;&#x4E9B;&#x81EA;&#x5B9A;&#x4E49;&#x94FE;&#x5728;k8s &#x670D;&#x52A1;&#x4E2D;&#x662F;&#x5FC5;&#x987B;&#x7684;&#xFF0C;&#x4E0D;&#x4F1A;&#x8DDF;&#x968F;&#x8D44;&#x6E90;&#x53D8;&#x5316;&#x800C;&#x53D8;&#x5316;&#xFF0C;&#x6240;&#x4EE5;&#x5728;&#x66F4;&#x65B0;&#x89C4;&#x5219;&#x4E4B;&#x524D;&#xFF0C;&#x63D0;&#x524D;&#x65E0;&#x6761;&#x4EF6;&#x751F;&#x6210;&#x8FD9;&#x4E9B;&#x94FE;&#xFF0C;&#x505A;&#x597D;&#x51C6;&#x5907;&#x5DE5;&#x4F5C;&#xFF0C;&#x968F;&#x540E;&#x4F1A;&#x5728;&#x8FD9;&#x4E9B;&#x81EA;&#x5B9A;&#x4E49;&#x94FE;&#x4E0A;&#x521B;&#x5EFA;&#x76F8;&#x5E94;&#x7684;&#x89C4;&#x5219;&#x3002;</p>
+<p>&#x9700;&#x8981;&#x6CE8;&#x610F;&#x7684;&#x662F;&#xFF0C;&#x5728;&#x5185;&#x6838;&#x56FA;&#x5B9A;&#x94FE;&#x5F15;&#x7528;K8S &#x7684;&#x94FE;&#x65F6;&#xFF0C;&#x8FD9;&#x4E9B;&#x65B0;&#x94FE;&#x90FD;&#x662F;&#x4F5C;&#x4E3A;&#x5185;&#x6838;&#x56FA;&#x5B9A;&#x94FE;&#x5728;nat&#x8868;&#x6216;filter&#x8868;&#x4E2D;&#x7684;&#x7B2C;&#x4E00;&#x6761;&#x89C4;&#x5219;&#x3002;&#x8FD9;&#x6837;&#xFF0C;&#x6240;&#x6709;&#x8FDB;&#x5165;&#x56FA;&#x5B9A;&#x94FE;&#x7684;&#x6D41;&#x5305;&#x5728;nat&#x6216;filter &#x65F6;&#xFF0C;&#x90FD;&#x4F1A;&#x5BFC;&#x5165;&#x81EA;&#x5B9A;&#x4E49;&#x94FE;&#x4E2D;&#x3002;&#x7279;&#x522B;&#x5730;&#xFF0C;PREROUTING &#x548C;OUTPUT &#x7684;&#x9996;&#x6761;NAT&#x89C4;&#x5219;&#x90FD;&#x5148;&#x5C06;&#x6240;&#x6709;&#x6D41;&#x91CF;&#x5BFC;&#x5165;KUBE-SERVICE &#x94FE;&#x4E2D;&#xFF0C;&#x8FD9;&#x6837;&#x5C31;&#x622A;&#x83B7;&#x4E86;&#x6240;&#x6709;&#x7684;&#x5165;&#x6D41;&#x91CF;&#x548C;&#x51FA;&#x6D41;&#x91CF;&#xFF0C;&#x8FDB;&#x800C;&#x53EF;&#x4EE5;&#x5BF9;k8s &#x76F8;&#x5173;&#x6D41;&#x91CF;&#x8FDB;&#x884C;&#x91CD;&#x5B9A;&#x5411;&#x5904;&#x7406;&#x3002;</p>
+<p>&#x76F8;&#x5173;&#x4EE3;&#x7801;&#x5982;&#x4E0B;&#xFF1A;</p>
+</li>
+</ol>
+<pre><code class="lang-go">    <span class="hljs-keyword">for</span> _, chain := <span class="hljs-keyword">range</span> iptablesJumpChains {
+        <span class="hljs-keyword">if</span> _, err := proxier.iptables.EnsureChain(chain.table, chain.chain); err != <span class="hljs-literal">nil</span> { <span class="hljs-comment">//&#x521B;&#x5EFA;&#x94FE;</span>
+            klog.Errorf(<span class="hljs-string">&quot;Failed to ensure that %s chain %s exists: %v&quot;</span>, chain.table, kubeServicesChain, err)
+            <span class="hljs-keyword">return</span>
+        }
+        args := <span class="hljs-built_in">append</span>(chain.extraArgs,
+            <span class="hljs-string">&quot;-m&quot;</span>, <span class="hljs-string">&quot;comment&quot;</span>, <span class="hljs-string">&quot;--comment&quot;</span>, chain.comment,
+            <span class="hljs-string">&quot;-j&quot;</span>, <span class="hljs-keyword">string</span>(chain.chain),
+        )
+        <span class="hljs-keyword">if</span> _, err := proxier.iptables.EnsureRule(utiliptables.Prepend,  chain.table, chain.sourceChain, args...); err != <span class="hljs-literal">nil</span> { <span class="hljs-comment">// &#x5F15;&#x7528;&#x94FE;</span>
+            klog.Errorf(<span class="hljs-string">&quot;Failed to ensure that %s chain %s jumps to %s: %v&quot;</span>, chain.table, chain.sourceChain, chain.chain, err)
+            <span class="hljs-keyword">return</span>
+        }
+    }
+</code></pre>
+<p>&#x4E0A;&#x8FB9;&#x4EE3;&#x7801;&#x5B8C;&#x6210;&#x7684;iptables&#x547D;&#x4EE4;&#x5982;&#x4E0B;&#xFF1A;</p>
+<pre><code class="lang-go">iptables -w -N KUBE-EXTERNAL-SERVICES  -t filter
+iptables -w -I  INPUT -t filter -m conntrack --ctstate NEW  -m  comment --comment -j KUBE-EXTERNAL-SERVICES  kubernetes externally-visible service portals
+
+iptables -w -N KUBE-SERVICES  -t filter  
+iptables -w -I OUTPUT -t filter  -m conntrack --ctstate NEW  -m  comment --comment -j  KUBE-SERVICES  kubernetes service portals
+
+iptables -w -N KUBE-SERVICES  -t nat
+iptables -w -I OUTPUT -t nat  -m conntrack --ctstate NEW  -m  comment --comment -j  KUBE-SERVICES  kubernetes service portals
+
+iptables -w -N KUBE-SERVICES  -t nat
+iptables -w -I PREROUTING -t nat  -m conntrack --ctstate NEW  -m  comment --comment -j  KUBE-SERVICES  kubernetes service portals
+
+iptables -w -N KUBE-POSTROUTING  -t nat
+iptables -w -I POSTROUTING -t nat  -m conntrack --ctstate NEW  -m  comment --comment -j  KUBE-POSTROUTING  kubernetes postrouting rules
+
+iptables -w -N KUBE-FORWARD  -t filter
+iptables -w -I FORWARD -t filter  -m conntrack --ctstate NEW  -m  comment --comment -j KUBE-FORWARD  kubernetes forwarding rules
+</code></pre>
+<ol>
+<li><p>&#x5C06;&#x5F53;&#x524D;&#x5185;&#x6838;&#x4E2D;filter&#x8868;&#x548C;nat &#x8868;&#x4E2D;&#x7684;&#x5168;&#x90E8;&#x89C4;&#x5219;&#x4E34;&#x65F6;&#x5BFC;&#x51FA;&#x5230;&#x6570;&#x4E2A;buffer&#xFF0C;&#x5177;&#x4F53;&#x7684;&#xFF1A;</p>
+<ul>
+<li><p>&#x4F7F;&#x7528; proxier.existingFilterChainsData &#x4FDD;&#x5B58;filter&#x8868;&#x7684;&#x4FE1;&#x606F;</p>
+</li>
+<li><p>&#x4F7F;&#x7528; existingFilterChains&#x4FDD;&#x5B58; proxier.existingFilterChainsData  &#x7684;chain &#x4FE1;&#x606F;</p>
+</li>
+<li><p>&#x4F7F;&#x7528; proxier.iptablesData &#x4FDD;&#x5B58;nat &#x8868;&#x7684;&#x4FE1;&#x606F;</p>
+</li>
+<li><p>&#x4F7F;&#x7528; existingNATChains &#x4FDD;&#x5B58; proxier.iptablesData  &#x7684;chain &#x4FE1;&#x606F;</p>
+</li>
+<li><p>&#x91CD;&#x7F6E; proxier.filterChains&#xFF0C;proxier.filterRules&#xFF0C;proxier.natChains&#xFF0C;proxier.natRules &#x56DB;&#x4E2A;buffer , &#x8FD9;&#x56DB;&#x4E2A;buffer &#x7528;&#x6765;&#x7F13;&#x5B58;&#x6700;&#x65B0;&#x7684;&#x5173;&#x4E8E;k8s &#x670D;&#x52A1;&#x4E8E;endpoints &#x7684; iptables &#x4FE1;&#x606F;&#x3002;</p>
+</li>
+</ul>
+</li>
+</ol>
+<hr>
+<p>&#x5728;&#x4E0A;&#x9762;&#x51C6;&#x5907;&#x5DE5;&#x4F5C;&#x505A;&#x597D;&#x4E4B;&#x540E;&#xFF0C;&#x5F00;&#x59CB;&#x5411;&#x4E0A;&#x8FF0;&#x56DB;&#x4E2A;buffer&#x4E2D;&#x6839;&#x636E;&#x6761;&#x4EF6;&#x4E0D;&#x65AD;&#x8FFD;&#x52A0;&#x5185;&#x5BB9;&#xFF0C;&#x7F13;&#x5B58;&#x5185;&#x5BB9;&#x5728;&#x540C;&#x6B65;&#x89C4;&#x5219;&#x7684;&#x6700;&#x540E;&#x73AF;&#x8282;&#x5237;&#x5165;&#x5185;&#x6838;&#x3002;</p>
+<ol>
+<li><p>&#x9996;&#x5148;&#x4FDD;&#x8BC1;</p>
+<ul>
+<li>&#x5C06;KUBE-SERVICES&#xFF0C;KUBE-EXTERNAL-SERVICES&#x3001;KUBE-FORWARD &#x94FE;&#x5199;&#x5165;proxier.filterChains &#xFF0C;&#x94FE;&#x7684;&#x6765;&#x6E90;&#x4E3A; existingFilterChains&#x4E2D;&#x5DF2;&#x5B58;&#x5728;&#x7684;&#x6216;&#x65B0;&#x521B;&#x5EFA;&#x7684;&#x3002;</li>
+<li>&#x5C06;KUBE-SERVICES&#xFF0C;KUBE-NODEPORTS&#xFF0C;KUBE-POSTROUTING&#x3001;KUBE-MARK-MASQ &#x94FE;&#x5199;&#x5165;proxier.natChains&#x4E2D;&#xFF0C;&#x94FE;&#x7684;&#x6765;&#x6E90;&#x4E3A; existingNATChains &#x4E2D;&#x5DF2;&#x5B58;&#x5728;&#x7684;&#x6216;&#x65B0;&#x521B;&#x5EFA;&#x7684;&#x3002;</li>
+</ul>
+<p>&#x76F8;&#x5173;&#x4EE3;&#x7801;&#x6D41;&#x7A0B;&#x5982;&#x4E0B;</p>
+</li>
+</ol>
+<pre><code class="lang-go"><span class="hljs-keyword">for</span> _, chainName := <span class="hljs-keyword">range</span> []utiliptables.Chain{kubeServicesChain, kubeExternalServicesChain, kubeForwardChain} {
+        <span class="hljs-keyword">if</span> chain, ok := existingFilterChains[chainName]; ok {
+            writeBytesLine(proxier.filterChains, chain)
+        } <span class="hljs-keyword">else</span> {
+            writeLine(proxier.filterChains, utiliptables.MakeChainLine(chainName))
+        }
+    }
+<span class="hljs-keyword">for</span> _, chainName := <span class="hljs-keyword">range</span> []utiliptables.Chain{kubeServicesChain, kubeNodePortsChain, kubePostroutingChain, KubeMarkMasqChain} {
+        <span class="hljs-keyword">if</span> chain, ok := existingNATChains[chainName]; ok {
+            writeBytesLine(proxier.natChains, chain)
+        } <span class="hljs-keyword">else</span> {
+         <span class="hljs-comment">//KUBE-NODEPORTS&#xFF0C;KUBE-MARK-MASQ &#x4E4B;&#x524D;&#x5E76;&#x672A;&#x88AB;&#x521B;&#x5EFA;&#xFF0C;&#x73B0;&#x5728;&#x521B;&#x5EFA;</span>
+            writeLine(proxier.natChains, utiliptables.MakeChainLine(chainName))
+        }
+    }
+</code></pre>
+<ol>
+<li>KUBE-POSTROUTING  &#x94FE;&#x4E2D;&#x8FFD;&#x52A0;&#x5199;&#x5165;&#x4E24;&#x6761;nat&#x89C4;&#x5219; &#xFF0C;&#x5199;&#x5165;proxier.natRules &#x7F13;&#x5B58;&#x4E2D;&#x3002;</li>
+</ol>
+<pre><code class="lang-go">-A KUBE-POSTROUTING -m  comment  --comment  <span class="hljs-string">&quot;kubernetes service traffic requiring SNAT&quot;</span> -m  mark  --mark  <span class="hljs-number">0x00004000</span>/<span class="hljs-number">0x00004000</span>  -j MASQUERADE
+-A KUBE-MARK-MASQ  -j MARK --set-xmark <span class="hljs-number">0x00004000</span>/<span class="hljs-number">0x00004000</span>
+</code></pre>
+<p>&#x4E0A;&#x8FF0;&#x7B2C;&#x4E00;&#x6761;&#x89C4;&#x5219;&#x8868;&#x793A;&#x5982;&#x679C;&#x8FDB;&#x5165; KUBE-POSTROUTING &#x94FE;&#x7684;&#x5305;&#x5339;&#x914D;&#x6807;&#x7B7E;0x00004000/0x00004000 , &#x5219;&#x5BF9;&#x6B64;&#x5305;&#x505A;      SNAT&#x3002;&#x4ECE;&#x5BF9;KUBE-POSTROUTING &#x94FE;&#x7684;&#x5F15;&#x7528;&#x77E5;&#x9053;&#xFF0C;&#x6570;&#x636E;&#x5305;&#x5728;&#x8FDB;&#x5165;nat &#x8868;&#x7684; POSTROUTING&#x540E;&#xFF0C;&#x4F1A;&#x5C06;&#x6570;&#x636E;&#x5BFC;&#x5165;KUBE-POSTROUTING&#x3002;</p>
+<p>&#x7B2C;&#x4E8C;&#x6761;&#x89C4;&#x5219;&#x8868;&#x793A;&#x5BF9;&#x8FDB;&#x5165;KUBE-MARK-MASQ &#x7684;&#x5305;&#x5728;&#x5185;&#x6838;&#x4E2D;&#x8BBE;&#x7F6E;&#x5173;&#x8054;&#x7684;&#x6807;&#x7B7E;&#xFF1A;0x00004000/0x00004000 &#x3002;</p>
+<p>ps: <strong>mark&#x503C;&#x4E0D;&#x662F;&#x5305;&#x672C;&#x8EAB;&#x7684;&#x4E00;&#x90E8;&#x5206;&#xFF0C;</strong>&#x800C;&#x662F;&#x5728;&#x5305;&#x7A7F;&#x8D8A;&#x8BA1;&#x7B97;&#x673A;&#x7684;&#x8FC7;&#x7A0B;&#x4E2D;&#x7531;&#x5185;&#x6838;&#x5206;&#x914D;&#x7684;&#x548C;&#x5B83;&#x76F8;&#x5173;&#x8054;&#x7684;&#x4E00;&#x4E2A;&#x5B57;&#x6BB5;&#x3002;&#x5B83;&#x53EF;&#x80FD;&#x88AB;&#x7528;&#x6765;&#x6539;&#x53D8;&#x5305;&#x7684;&#x4F20;&#x8F93;&#x8DEF;&#x5F84;&#x6216;&#x8FC7;&#x6EE4;&#x3002;mark&#x503C;&#x53EA;&#x5728;&#x672C;&#x673A;&#x6709;&#x610F;&#x4E49;&#xFF01;</p>
+<p>Note: &#x6574;&#x4E2A;&#x5237;&#x65B0;&#x6D41;&#x7A0B;&#x4E2D;&#xFF0C;&#x5BF9;&#x4E8E;KUBE-POSTROUTING &#x94FE;&#x548C;KUBE-MARK-MASQ&#xFF0C;&#x5206;&#x522B;&#x53EA;&#x5B58;&#x5728;&#x4E0A;&#x8FF0;&#x7684;&#x4E00;&#x6761;&#x89C4;&#x5219;&#x3002;</p>
+<ol>
+<li><p>&#x904D;&#x5386;proxier.servieMap,&#x4E3A;&#x6BCF;&#x4E00;&#x4E2A;service &#x505A;&#x4EE5;&#x4E0B;&#x4E8B;&#x60C5;&#xFF1A;</p>
+</li>
+<li><p>&#x5982;&#x679C;servcie &#x6709;endpoints, &#x5219;&#x5728;proxier.natChains &#x5199;&#x5165;&#x4E00;&#x6761;&#x94FE;&#xFF1A;KUBE-SVC-XXX&#xFF0C;&#x5E76;&#x4E14;&#x8BBE;&#x7F6E;
+activeNATChains[svcChain] = true&#x3002;</p>
+<p>KUBE-SVC-XXX &#x7684;XXX&#x662F;&#x6307;proxy server &#x901A;&#x8FC7;SHA256 &#x7B97;&#x6CD5;&#x5BF9;&#x201C;namespace + name + portname+&#x534F;&#x8BAE;&#x540D;&#x201D;&#x751F;&#x6210;&#x54C8;&#x5E0C;&#x503C;&#xFF0C;&#x7136;&#x540E;&#x901A;&#x8FC7;base32&#x5BF9;&#x8BE5;&#x54C8;&#x5E0C;&#x503C;&#x7F16;&#x7801;&#xFF0C;&#x6700;&#x540E;&#x53D6;&#x7F16;&#x7801;&#x503C;&#x7684;&#x524D;16&#x4F4D;&#x7684;&#x503C;&#x3002;</p>
+</li>
+<li><p>&#x5982;&#x679C;&#x670D;&#x52A1;&#x5177;&#x6709;<code>OnlyNodeLocalEndpoints</code>,  &#x5219;&#x5728;proxier.natChains &#x5199;&#x5165;&#x4E00;&#x6761;&#x94FE;&#xFF1A;KUBE-XLB-XXX&#xFF0C;&#x5E76;&#x4E14;&#x8BBE;&#x7F6E;activeNATChains[svcXlbChain] = true&#x3002;</p>
+</li>
+<li><p><strong>Part 1</strong>:  &#x4E3A;cluster_ip &#x8BBE;&#x7F6E;&#x8BBF;&#x95EE;&#x89C4;&#x5219;</p>
+<p>&#x4E3A;&#x6709;endpints &#x7684;&#x670D;&#x52A1;&#x5728;KUBE-SERVICES &#x94FE;&#x4E0A;&#x5EFA;&#x7ACB;nat&#x8868;&#x89C4;&#x5219;&#xFF08;&#x5C06;&#x89C4;&#x5219;&#x5199;&#x5165;proxier.natRules &#xFF0C;&#x4E0B;&#x540C;&#xFF09;&#xFF1A;</p>
+<ul>
+<li><p>&#x5982;&#x679C;&#x8BBE;&#x7F6E;&#x4E86;proxier.masqueradeAll , kube-proxy &#x4F1A;&#x5BF9;&#x6240;&#x6709;&#x76EE;&#x7684;&#x5730;&#x5740;&#x662F;{cluster_ip:port}&#x7684;&#x5305;&#x6253;&#x6807;&#x7B7E;&#xFF0C;&#x8FDB; &#x800C;&#x505A;SNAT&#xFF1B;</p>
+</li>
+<li><p>&#x6216;&#x8005;&#x5982;&#x679C;&#x6307;&#x5B9A;&#x4E86;--cluster--cidr , kube-proxy &#x4F1A;&#x5BF9;&#x76EE;&#x7684;&#x5730;&#x5740;&#x662F;{cluster_ip:port} &#x7684;&#x96C6;&#x7FA4;&#x5916;&#x90E8;&#xFF08;! -s ${cluster_cidr}&#xFF09;&#x6D41;&#x91CF;&#x5305;&#x6253;&#x6807;&#x7B7E;&#xFF0C;&#x8FDB;&#x800C;&#x505A;SNAT&#xFF1B;&#xFF08;&#x4EE5;&#x4E0A;&#x89C4;&#x5219;&#x4E8C;&#x9009;&#x4E00;&#xFF09;</p>
+</li>
+<li><p>&#x603B;&#x662F;&#x5C06;&#x5C06;&#x76EE;&#x7684;&#x5730;&#x5740;&#x662F;{cluster_ip:port} &#x7684;&#x6D41;&#x91CF;&#x5BFC;&#x5165;&#x5230;KUBE-SVC-XXX</p>
+</li>
+<li><p>&#x5982;&#x679C;&#x670D;&#x52A1;&#x6CA1;&#x6709;endpoints, &#x5728;KUBE-SERVICES&#x94FE;&#x4E0A;&#x5EFA;&#x7ACB;filter &#x89C4;&#x5219;&#xFF08;&#xFF08;&#x5C06;&#x89C4;&#x5219;&#x5199;&#x5165;proxier.filterRules &#xFF0C;&#x4E0B;&#x540C;&#xFF09;&#xFF0C;&#x8868;&#x793A;&#x653E;&#x5F03;&#x8BBF;&#x95EE;&#x76EE;&#x7684;&#x5730;&#x5740;{cluster_ip:port}&#x7684;&#x5305;&#x3002;&#x89C4;&#x5219;&#x5F62;&#x5F0F;&#x5982;&#x4E0B;&#xFF1A;</p>
+</li>
+</ul>
+<p>&#x89C4;&#x5219;&#x5F62;&#x5F0F;&#x5982;&#x4E0B;</p>
+<pre><code class="lang-go">-A KUBE-SERVICES ...--comment ${svc-port-name} cluster IP ...  -d ${cluster_ip}/<span class="hljs-number">32</span> -dport xxx  -j KUBE-MARK-MASQ   <span class="hljs-comment">// if proxier.masqueradeAll =True</span>
+-A KUBE-SERVICES ... --comment ${svc-port-name} cluster IP ... -d ${cluster_ip}/<span class="hljs-number">32</span> -dport XXX  ! -s ${cluster_cidr}  -j KUBE-MARK-MASQ  <span class="hljs-comment">// else if len(proxier.clusterCIDR) &gt; 0</span>
+-A KUBE-SERVICES ... --comment ${svc-port-name} cluster IP ... -d ${cluster_ip}/<span class="hljs-number">32</span> -dport xxx  -j  KUBE-SVC-XXX <span class="hljs-comment">// &#x6709;endpoints &#x65F6;&#x603B;&#x662F;&#x6DFB;&#x52A0;&#x6B64;&#x89C4;&#x5219;</span>
+
+-A KUBE-SERVICES ...--comment {svc-port-name} has no endpoints ... -d ${cluster_ip}/<span class="hljs-number">32</span>  -dport xxx  -j REJECT  <span class="hljs-comment">// &#x6CA1;&#x6709;endpoint&#x65F6;&#xFF0C;&#x76F4;&#x63A5;&#x5C06;&#x53D1;&#x5F80;&#x6B64;IP&#xFF1A;Port&#x7684;&#x5305;&#x4E22;&#x5F03;</span>
+</code></pre>
+</li>
+</ol>
+<ul>
+<li><p><strong>Part 2</strong>: &#x4E3A;externalIP &#x7C7B;&#x578B;&#x670D;&#x52A1;&#x5EFA;&#x7ACB;&#x89C4;&#x5219;</p>
+<ul>
+<li><p>&#x5982;&#x679C;external IP &#x662F;&#x672C;&#x673A;IP&#xFF0C;&#x5E76;&#x4E14;&#x670D;&#x52A1;&#x4F7F;&#x7528;&#x7684;&#x534F;&#x8BAE;&#x4E0D;&#x662F;SCTP,  &#x751F;&#x6210;&#x7ED3;&#x6784;&#x4F53;LocalPort &#x4EE5;&#x8BB0;&#x5F55;&#x8FD9;&#x6837;&#x7684;&#x670D;&#x52A1;&#x7684;external IP , port ,&#x534F;&#x8BAE;&#xFF0C;&#x4EE5;&#x53CA;&#x63CF;&#x8FF0;&#x4FE1;&#x606F;&#x3002; &#x786E;&#x8BA4;&#x5728;&#x672C;&#x673A;&#x4E0A;&#x6253;&#x5F00;&#x670D;&#x52A1;&#x7AEF;&#x53E3;(&#x53EF;&#x4EE5;&#x628A;&#x8FD9;&#x4E2A;socket&#x7406;&#x89E3;&#x4E3A;&#x201C;&#x5360;&#x4F4D;&#x7B26;&#x201D;&#xFF0C;&#x4EE5;&#x4FBF;&#x8BA9;&#x64CD;&#x4F5C;&#x7CFB;&#x7EDF;&#x4E3A;&#x672C;&#x673A;&#x5176;&#x4ED6;&#x5E94;&#x7528;&#x7A0B;&#x5E8F;&#x5206;&#x914D;&#x7AEF;&#x53E3;&#x65F6;&#x8BA9;&#x5F00;&#x8BE5;&#x7AEF;&#x53E3;&#xFF09;&#xFF0C;&#x5E76;&#x4E14;&#x6DFB;&#x52A0;{LocalPort &#xFF1A;socket} &#x5230;replacementPortsMap&#x3002;</p>
+</li>
+<li><p>&#x5982;&#x679C;&#x8BE5;&#x670D;&#x52A1;&#x6709;endpoints &#xFF0C;&#x5728;KUBE-SERVICES &#x94FE;&#x6DFB;&#x52A0; nat &#x8868;&#x89C4;&#x5219;</p>
+<ul>
+<li>&#x5BF9;&#x4E8E;&#x5230;external_ip:port &#x7684;&#x5305;&#x6253;&#x6807;&#x7B7E;&#xFF1B;</li>
+<li>&#x5BF9;&#x4E8E;&#x4ECE;&#x96C6;&#x7FA4;&#x5916;&#x53D1;&#x9001;&#x7684;&#x76EE;&#x7684;&#x5730;&#x5740;&#x662F;extenralIP &#x7684;&#x5305;&#x5EFA;&#x7ACB;&#x89C4;&#x5219;</li>
+<li>&#x5BF9;&#x4E8E;&#x76EE;&#x7684;&#x5730;&#x5740;&#x548C;node &#x5730;&#x5740;&#x76F8;&#x540C;&#x7684;&#x5305;&#x5EFA;&#x7ACB;&#x89C4;&#x5219;</li>
+</ul>
+</li>
+<li>&#x5982;&#x679C;&#x8BE5;&#x670D;&#x52A1;&#x6CA1;&#x6709;endpoints &#xFF0C;&#x5728;KUBE-EXTERNAL-SERVICES &#x6DFB;&#x52A0; filter &#x89C4;&#x5219;&#xFF0C;&#x8868;&#x793A;&#x653E;&#x5F03;&#x76EE;&#x7684;&#x5730;&#x5740;&#x662F;{external_ip:xxx}&#x7684;&#x5305;</li>
+</ul>
+<p>&#x76F8;&#x5173;&#x89C4;&#x5219;&#x5F62;&#x5F0F;&#x5982;&#x4E0B;</p>
+<pre><code class="lang-go">-A KUBE-SERVICES ... --comment ${svc-port-name} external IP ... -d ${external_ip}/<span class="hljs-number">32</span> -dport xxx -j KUBE-MARK-MASQ
+
+-A KUBE-SERVICES ... --comment ${svc-port-name} external IP ... -d ${external_ip}/<span class="hljs-number">32</span> -dport xxx -m physdev ! --physdev-is-in -m addrtype ! --src-<span class="hljs-keyword">type</span> LOCAL -j KUBE-SVC-xxx
+
+-A KUBE-SERVICES ... --comment ${svc-port-name} external IP ... -d ${external_ip}/<span class="hljs-number">32</span> -dport xxx -m addrtype --dst-<span class="hljs-keyword">type</span> LOCAL -j KUBE-SVC-xxx
+
+-A KUBE-EXTERNAL-SERVICES ...--comment ${svc-port-name} has no endpoints ... -d ${external_ip}/<span class="hljs-number">32</span>  -dport xxx  -j REJECT
+</code></pre>
+</li>
+</ul>
+<ul>
+<li><p><strong>Part 3</strong> : &#x670D;&#x52A1;&#x7C7B;&#x578B;&#x4E3A;LoadBalancer&#x65F6;&#xFF0C;&#x8BBE;&#x7F6E;&#x5916;&#x90E8;&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x76F8;&#x5173;&#x89C4;&#x5219;</p>
+<ul>
+<li><p>&#x5982;&#x679C;&#x8BE5;Ingress&#x6709; endpoints &#xFF0C;&#x9996;&#x5148;&#x5411;proxier.natChains &#x4E2D;&#x5199;&#x5165;&#x4E00;&#x6761;KUBE-FW-XXX &#x94FE;&#xFF0C;&#x5E76;&#x4E14;activeNATChains[fwChain] = true&#x3002;</p>
+</li>
+<li><p>&#x5EFA;&#x7ACB;KUBE-FW-XXX&#x540E;&#xFF0C;&#x5C06;&#x76EE;&#x7684;&#x5730;&#x5740;&#x662F;{ingress_ip:port} &#x7684;&#x6D41;&#x91CF;&#x90FD;&#x5BFC;&#x5165;KUBE-FW-XXX&#x3002;</p>
+<pre><code class="lang-go">-A KUBE-SERVICES ... --comment ${svc-port-name} loadbalancer IP ... -d ${ingress_ip}/<span class="hljs-number">32</span> -dport xxx -j KUBE-FW-xxx <span class="hljs-comment">// &#x5148;&#x5230; KUBE-FW-xxx</span>
+</code></pre>
+</li>
+<li><p>&#x6839;&#x636E;svcInfo.OnlyNodeLocalEndpoints  &#x548C;svcInfo.LoadBalancerSourceRanges &#x53D6;&#x503C;&#x6709;&#x56DB;&#x79CD;&#x4E0D;&#x540C;nat &#x89C4;&#x5219;&#x5EFA;&#x7ACB;&#x65B9;&#x6CD5;&#x3002;</p>
+<pre><code class="lang-go"><span class="hljs-comment">//if !svcInfo.OnlyNodeLocalEndpoints &amp;&amp; len(svcInfo.LoadBalancerSourceRanges) == 0</span>
+-A KUBE-FW-xxx ... --commnent ${svc-port-name} loadbalancer IP -j KUBE-MARK-MASQ 
+-A KUBE-FW-xxx ... --commnent ${svc-port-name} loadbalancer IP -j KUBE-SVC-xxx
+
+<span class="hljs-comment">//if !svcInfo.OnlyNodeLocalEndpoints &amp;&amp; len(svcInfo.LoadBalancerSourceRanges) != 0</span>
+-A KUBE-FW-xxx ... --commnent ${svc-port-name} loadbalancer IP -j KUBE-MARK-MASQ 
+-A KUBE-FW-xxx ... --commnent ${svc-port-name} loadbalancer IP -s  ${each_load_balancer} -j KUBE-SVC-xxx <span class="hljs-comment">// &#x591A;&#x6761;&#x89C4;&#x5219;</span>
+-A KUBE-FW-xxx ... --commnent ${svc-port-name} loadbalancer IP -s  ${local_node_ip} -j KUBE-SVC-xxx <span class="hljs-comment">//if allowFromNode</span>
+
+<span class="hljs-comment">//if svcInfo.OnlyNodeLocalEndpoints &amp;&amp; len(svcInfo.LoadBalancerSourceRanges) == 0</span>
+-A KUBE-FW-xxx ... --commnent ${svc-port-name} loadbalancer IP -j KUBE-XLB-xxx
+
+<span class="hljs-comment">//if svcInfo.OnlyNodeLocalEndpoints &amp;&amp; len(svcInfo.LoadBalancerSourceRanges) != 0</span>
+-A KUBE-FW-xxx ... --commnent ${svc-port-name} loadbalancer IP -s  ${each_load_balancer} -j KUBE-XLB-xxx <span class="hljs-comment">//&#x591A;&#x6761;&#x89C4;&#x5219;</span>
+-A KUBE-FW-xxx ... --commnent ${svc-port-name} loadbalancer IP -s  ${local_node_ip} -j KUBE-XLB-xxx <span class="hljs-comment">//if allowFromNode</span>
+</code></pre>
+</li>
+<li><p>&#x6700;&#x540E;&#xFF0C;&#x5BF9;ingress &#x7C7B;&#x578B;&#x7684;&#x670D;&#x52A1;&#x65E0;&#x6761;&#x4EF6;&#x5199;&#x5165;&#x4E00;&#x6761;&#x4E22;&#x5F03;&#x7684;nat &#x89C4;&#x5219;&#xFF0C;&#x8868;&#x793A;&#x4E0D;&#x7B26;&#x5408;&#x4E0A;&#x8FB9;&#x4EFB;&#x4F55;&#x4E00;&#x6761;&#x89C4;&#x5219;&#x7684;&#x6570;&#x636E;&#x5C06;&#x88AB;&#x804C;&#x4F4D;&#x4E22;&#x5F03;&#x5305;&#x3002;&#x89C4;&#x5219;&#x5F62;&#x5F0F;&#x5982;&#x4E0B;</p>
+<pre><code>-A KUBE-FW-XXX ... --comment ${svc-port-name} loadbalancer IP  -j KUBE-MARK-DROP
+</code></pre></li>
+</ul>
+</li>
+<li><p><strong>Part 4</strong>  &#x4E3A;NodePort &#x7C7B;&#x578B;&#x670D;&#x52A1;&#x89C4;&#x5219;&#x5EFA;&#x7ACB;&#xFF1A;</p>
+<pre><code class="lang-go">replacementPortsMap[lp] = proxier.portsMap[lp] ,&#x5E76;&#x4E14;&#x6253;&#x5F00;&#x7AEF;&#x53E3;
+
+<span class="hljs-comment">//if hasEndpoints &amp;&amp; if !svcInfo.OnlyNodeLocalEndpoints, &#x5728;NAT&#x8868;&#x5199;&#x5165;&#xFF1A;</span>
+-A KUBE-NODEPORTS ... --comment ${svc-port-name} --dport {nodeport} -j KUBE-MARK-MASQ
+-A KUBE-NODEPORTS ... --comment ${svc-port-name} --dport ${nodeport} -j KUBE-SVC-xxx
+
+<span class="hljs-comment">//if hasEndpoints &amp;&amp; if svcInfo.OnlyNodeLocalEndpoints&#xFF0C;&#x5728;NAT&#x8868;&#x5199;&#x5165;&#xFF1A;</span>
+-A KUBE-NODEPORTS ... --comment ${svc-port-name} --dport ${nodeport} -s <span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.0</span>/<span class="hljs-number">8</span> -j KUBE-SVC-xxx
+-A KUBE-NODEPORTS ... --comment ${svc-port-name} --dport ${nodeport} -j KUBE-XLB-xxx
+
+<span class="hljs-comment">// !if hasEndpoints ,&#x5728;Filter&#x8868;&#x5199;&#x5165;&#xFF1A;</span>
+-A KUBE-EXTERNAL-SERVICES ... -m addrtype --dst-<span class="hljs-keyword">type</span> LOCAL ... --dport ${nodeport} -j REJECT
+</code></pre>
+</li>
+</ul>
+<hr>
+<p>&#x4EE5;&#x4E0A;&#xFF0C;&#x4FBF;&#x662F;&#x4E3A;&#x5404;&#x79CD;&#x7C7B;&#x578B;&#x7684;&#x670D;&#x52A1;&#x5EFA;&#x7ACB;&#x5305;&#x8F6C;&#x53D1;&#x89C4;&#x5219;&#x7684;&#x673A;&#x5236;&#x3002;&#x63A5;&#x4E0B;&#x6765;&#xFF0C;&#x5C31;&#x662F;&#x5EFA;&#x7ACB;endpoints &#x76F8;&#x5173;&#x7684;&#x94FE;&#x548C;&#x89C4;&#x5219;</p>
+<ul>
+<li><p>&#x9996;&#x5148;&#xFF0C;&#x4E3A;&#x540C;&#x4E00;&#x4E2A;service &#x7684;&#x6240;&#x6709;endpoints &#x5728;nat &#x8868;&#x5EFA;&#x7ACB;&#x94FE; KUBE-SEP-XXX
+<code>: KUBE-SEP-XXX -[0:0]</code>&#xFF0C;&#x5E76;&#x4E14;&#x8BB0;&#x5F55; activeNATChains[&quot;KUBE-SEP-XXX&quot;] = true</p>
+</li>
+<li><p>&#x5982;&#x679C;&#x670D;&#x52A1;&#x8BBE;&#x7F6E;&#x4E86;&#x201D;clientIP&#x201C; &#x4EB2;&#x548C;&#x6027;&#xFF0C; &#x5219;&#x4E3A;&#x8BE5;&#x670D;&#x52A1;&#x7684;&#x6BCF;&#x4E00;&#x4E2A;endpoint  &#x8BBE;&#x7F6E;&#x4F1A;&#x8BDD;&#x4EB2;&#x548C;&#x6027;</p>
+</li>
+</ul>
+<pre><code class="lang-go">-A KUBE-SVC-XXX -m recent --name KUBE-SEP-XXX --rcheck --seconds xxx --reap -j KUBE-SEP-XXX <span class="hljs-comment">//&#x591A;&#x4E2A;endpoints,&#x5219;&#x6709;&#x591A;&#x6761;&#x7C7B;&#x4F3C;&#x89C4;&#x5219;</span>
+</code></pre>
+<ul>
+<li>&#x5728;endpointsChain &#x94FE;&#x4E0A;&#x5EFA;&#x7ACB;nat&#x89C4;</li>
+</ul>
+<p>&#x5BF9;&#x4E8E;&#x591A;&#x4E2A;endpoints (n &gt;1) ,&#x5FAA;&#x73AF;&#x5EFA;&#x7ACB;&#x4EE5;&#x4E0B;&#x89C4;&#x5219;&#xFF0C;&#x5E76;&#x4E14;&#x5229;&#x7528;iptables &#x7684;&#x968F;&#x673A;&#x548C;&#x6982;&#x7387;&#x8F6C;&#x53D1;&#x7684;&#x529F;&#x80FD;&#x3002;&#x6982;&#x7387;&#x8BA1;&#x7B97;&#x662F;&#x901A;&#x8FC7;&#x67E5;&#x8868;&#xFF08;precomputeProbabilities &#x5B57;&#x7B26;&#x4E32;&#x6570;&#x7EC4;&#xFF09;&#x6216;&#x8005;&#x73B0;&#x573A;&#x8BA1;&#x7B97;&#xFF08;n&gt;= len(precomputeProbabilities) &#x7684;&#x65B9;&#x5F0F;&#x5B8C;&#x6210;&#x3002;</p>
+<pre><code class="lang-go"><span class="hljs-comment">// &#x6982;&#x7387;&#x662F;&#x901A;&#x8FC7;1.0/float64(n-i)&#x8BA1;&#x7B97;&#x51FA;&#x6765;&#x7684;&#xFF0C;n &#x4EE3;&#x8868;endpoints&#x7684;&#x4E2A;&#x6570;</span>
+-A KUBE-SVC-XXX -m static --mode random  --probability xxx -j  KUBE-SEP-XXX <span class="hljs-comment">// &#x524D;n-1&#x4E2A;endpoints&#x4F7F;&#x7528;&#x6B64;&#x89C4;&#x5219;</span>
+
+-A KUBE-SVC-XXX  -j  KUBE-SEP-XXX  <span class="hljs-comment">// &#x7B2C;n&#x4E2A;endpoint &#x5EFA;&#x7ACB;&#x6B64;&#x89C4;&#x5219;</span>
+
+-A KUBE-SEP-XXX -s ${endpoint_ip}/<span class="hljs-number">32</span> -j KUBE-MARK-MASQ
+-A KUBE-SEP-XXX -m recent --name  KUBE-SEP-XXX --set  -j DNAT --to-destination xxx <span class="hljs-comment">// &#x5982;&#x679C;&#x8BBE;&#x7F6E;&#x4E86;&#x4F1A;&#x8BDD;&#x4EB2;&#x548C;&#x6027;&#xFF0C;&#x5199;&#x5165;&#x8BE5;&#x6761;&#x89C4;&#x5219;</span>
+-A KUBE-SEP-XXX -j DNAT  --to-destination xxx  <span class="hljs-comment">//&#x5982;&#x679C;&#x6CA1;&#x6709;&#x8BBE;&#x7F6E;&#x4F1A;&#x8BDD;&#x4EB2;&#x548C;&#x6027;&#xFF0C;&#x5199;&#x5165;&#x8BE5;&#x6761;&#x89C4;&#x5219;</span>
+</code></pre>
+<ul>
+<li><p>&#x5982;&#x679C;&#x670D;&#x52A1;&#x8FD8;&#x5177;&#x6709;OnlyNodeLocalEndpoints &#x5C5E;&#x6027;&#xFF0C;&#x8868;&#x793A;&#x53EA;&#x5C06;&#x6D41;&#x91CF;&#x5BFC;&#x5165;&#x5230;&#x672C;&#x673A;&#x4E0A;&#x7684;&#x540E;&#x7AEF;pod&#x4E0A;&#x3002;&#x6311;&#x9009;&#x51FA;&#x548C;proxy &#x5728;&#x76F8;&#x540C;&#x673A;&#x5668;&#x8FD0;&#x884C;&#x7684;endpoints&#xFF0C;&#x5728;nat &#x8868;&#x5EFA;&#x7ACB;&#x5982;&#x4E0B;&#x89C4;&#x5219;</p>
+<pre><code class="lang-go"> -A KUBE-XLB-XXX ... -s ${cluster-ip} -j KUBE-SVC-XXX  <span class="hljs-comment">// &#x8BBE;&#x7F6E;&#x4E86;clusterCIDR</span>
+
+ <span class="hljs-comment">//&#x5982;&#x679C;&#x6CA1;&#x6709;Local POD</span>
+ -A KUBE-XLB-XXX ... --comment ${svc-port-name} has no local endpoints -j KUBE-MARK-DROP
+
+ <span class="hljs-comment">//&#x5982;&#x679C;&#x6709;Local POD </span>
+ -A KUBE-XLB-XXX ... -m recent --name KUBE-SEP-XXX -rchenck --seconds xxx -j  KUBE-SEP-XXX <span class="hljs-comment">//&#x8BBE;&#x7F6E;&#x4E86;&#x4EB2;&#x548C;&#x6027;</span>
+
+ <span class="hljs-comment">//&#x5982;&#x679C;&#x6709;&#x591A;&#x4E2A;pods,&#x8BBE;&#x7F6E;</span>
+ -A KUBE-XLB-XXX ... -m static --mode  --probability xxx -j KUBE-SEP-XXX
+ -A KUBE-XLB-XXX ... -m static --mode  --probability xxx -j KUBE-SEP-XXX
+</code></pre>
+</li>
+</ul>
+<p>&#x81F3;&#x6B64;&#xFF0C;&#x5FAA;&#x73AF;&#x8BE5;&#x8282;&#x5185;&#x5BB9;&#xFF0C;&#x904D;&#x5386;&#x5B8C;&#x6210;&#x5BF9;serviceMap &#x4E2D;&#x6240;&#x6709;&#x7684;&#x670D;&#x52A1;&#x53CA;&#x5BF9;&#x5E94;&#x7684;endpoints &#x5EFA;&#x7ACB;&#x89C4;&#x5219;&#x3002;&#x63A5;&#x4E0B;&#x6765;&#xFF0C;&#x5C31;&#x662F;&#x5220;&#x9664;&#x8FC7;&#x671F;&#x89C4;&#x5219;&#x3002;</p>
+<ol>
+<li>&#x5220;&#x9664;&#x89C4;&#x5219;&#xFF1A;</li>
+</ol>
+<p>&#x5BF9;&#x4E8E;nat&#x8868;&#x4E2D;&#x539F;&#x6765;&#x5B58;&#x5728;&#x7684;&#x6BCF;&#x4E00;&#x4E2A;chain,&#x5982;&#x679C;&#x73B0;&#x5728;&#x4E0D;&#x5728;activeNATChains&#xFF0C;&#x5E76;&#x4E14;chain &#x7684;&#x540D;&#x79F0;&#x524D;&#x7F00;&#x4E3A;KUBE-SVC-&#x3001;KUBE-SEP-&#x3001;KUBE-FW-&#x3001;KUBE-XLB- &#x4E4B;&#x4E00;&#x7684;&#xFF0C;&#x6DFB;&#x52A0;<code>-X chainname</code> &#x7684;&#x89C4;&#x5219;&#xFF0C;&#x8868;&#x793A;&#x5220;&#x9664;&#x8FD9;&#x4E9B;&#x89C4;&#x5219;&#x3002;</p>
+<ol>
+<li>&#x5EFA;&#x7ACB;&#x6D41;&#x91CF;&#x5BFC;&#x5411;KUBE-NODEPORTS&#x7684;&#x89C4;&#x5219;</li>
+</ol>
+<pre><code class="lang-go">-A KUBE-SERVICES ... --comment  kubernetes service nodeports ... -j KUBE-NODEPORTS  <span class="hljs-comment">//if utilproxy.IsZeroCIDR(address)</span>
+
+-A KUBE-SERVICES ... --comment  kubernetes service nodeports ... -d ${node_ip}  -j  KUBE-NODEPORTS
+</code></pre>
+<ol>
+<li>&#x5982;&#x679C;&#x8BBE;&#x7F6E;&#x4E86;clusterCIDR&#xFF0C;&#x5411;Filter&#x8868;&#x4E2D;&#x5199;&#x5165;</li>
+</ol>
+<pre><code class="lang-go">-A KUBE-FORWARD ... --comment <span class="hljs-string">&quot;kubernetes forwarding rules&quot;</span> ... -m mark --mark <span class="hljs-number">0x00000400</span>/<span class="hljs-number">0x00000400</span> -j ACCEPT
+
+-A KUBE-FORWARD  -s ${cluster_ip}/<span class="hljs-number">32</span> ... -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A KUBE-FORWARD  -d ${cluster_ip}/<span class="hljs-number">32</span> ... --ctstate RELATED,ESTABLISHED -j ACCEPT
+</code></pre>
+<ol>
+<li><p>&#x5411;filter&#x8868;&#xFF0C;nat&#x8868; &#x5199;&#x5165;&quot;COMMIT&quot;&#x547D;&#x4EE4;,&#x8C03;&#x7528;iptables-restore&#x547D;&#x4EE4;&#x5C06;&#x89C4;&#x5219;&#x5199;&#x56DE;&#x5230;&#x5F53;&#x524D;node&#x7684;iptables&#x4E2D;</p>
+</li>
+<li><p>&#x5173;&#x95ED;&#x65E0;&#x7528;&#x94FE;&#x63A5;</p>
+</li>
+</ol>
+<pre><code class="lang-go"><span class="hljs-keyword">for</span> k, v := <span class="hljs-keyword">range</span> proxier.portsMap {
+        <span class="hljs-keyword">if</span> replacementPortsMap[k] == <span class="hljs-literal">nil</span> {
+            v.Close()
+        }
+    }
+</code></pre>
+<ol>
+<li><p>&#x5065;&#x5EB7;&#x68C0;&#x67E5;&#x670D;&#x52A1;&#x66F4;&#x65B0;</p>
+</li>
+<li><p>&#x6700;&#x540E;&#x5220;&#x9664;&#x8FC7;&#x671F; IP &#x7684;conntrack &#x4FE1;&#x606F;&#xFF0C; &#x4EE5;&#x9632;&#x6B62;&#x65E0;&#x6548;NAT&#x3002;</p>
+<ul>
+<li><p>&#x6839;&#x636E;&#x8FC7;&#x671F;UDP services(staleServices) &#x7684;cluster_ip&#xFF0C; &#xFF0C;&#x5220;&#x9664;&#x8FC7;&#x671F;cluster_ip &#x7684;conntrack&#x4FE1;&#x606F;&#x3002;</p>
+</li>
+<li><p>&#x6839;&#x636E;&#x8FC7;&#x671F;UDP endpoints(StaleEndpoints) &#x7684;pod IP ,&#x5220;&#x9664;&#x8FC7;&#x671F;pod_ip&#x4E0E; cluster_ip &#x4E4B;&#x95F4;&#x7684;conntrack &#x4FE1;&#x606F;</p>
+</li>
+</ul>
+</li>
+</ol>
+<p><strong>&#x9700;&#x8981;&#x7559;&#x610F;&#x7684;&#x662F;</strong>&#xFF1A;&#x5173;&#x4E8E;k8s iptables &#x89C4;&#x5219;&#x7684;&#x66F4;&#x65B0;&#x5C5E;&#x4E8E;&#x5168;&#x91CF;&#x66F4;&#x65B0;&#xFF0C;&#x5373;&#x5728;&#x7A0B;&#x5E8F;&#x4E2D; proxier.serviceMap &#x4E0E;  proxier.endpointsMap &#x65F6;&#x523B;&#x4FDD;&#x5B58;&#x7684;&#x90FD;&#x662F;&#x5168;&#x90E8;&#x6709;&#x6548;&#x7684;&#x670D;&#x52A1;&#x4E0E;&#x540E;&#x7AEF;&#xFF0C;&#x5E76;&#x4E0D;&#x662F;&#x53EA;&#x4FDD;&#x5B58;&#x6709;&#x66F4;&#x65B0;&#x7684;&#x670D;&#x52A1;&#x4E0E;&#x540E;&#x7AEF;&#x3002;</p>
+<h1 id="&#x603B;&#x7ED3;">&#x603B;&#x7ED3;</h1>
+<p>&#x6700;&#x540E;&#x7528;&#x4E24;&#x5F20;&#x56FE;&#x603B;&#x7ED3;&#x4E00;&#x4E0B; kube-proxy &#x66F4;&#x65B0;iptables &#x7684;&#x6D41;&#x7A0B;</p>
+<ol>
+<li><p>&#x8D44;&#x6E90;&#x66F4;&#x65B0;&#x4FE1;&#x606F;&#x6765;&#x6E90;</p>
+<p><img src="../kube-proxy-code-analysis/kube-proxy-code-framework.jpg" alt="kube-proxy-data-source"></p>
+</li>
+<li><p>&#x94FE;&#x5EFA;&#x7ACB;&#x53CA;&#x89C4;&#x5219;&#x5BFC;&#x5411;</p>
+<p><img src="../kube-proxy-code-analysis/kube-proxy-iptables.jpg" alt="kube-proxy IPtables"></p>
+</li>
+</ol>
+<p>&#x53E6;&#x5916;&#xFF1A;&#x5BF9;&#x4E8E;&#x6570;&#x636E;&#x5305;&#x7684;&#x51FA;&#x5165;&#x53E3;&#xFF0C;&#x6709;&#x8FD9;&#x4E48;&#x4E00;&#x53E5;&#x5FC3;&#x5F97;&#xFF1A;&#x53EA;&#x8981;&#x4F60;&#x7AD9;&#x5728;&#x5185;&#x6838;&#x7684;&#x89D2;&#x5EA6;&#x7406;&#x89E3;&#xFF0C;&#x65E0;&#x8BBA;&#x4ECE;&#x865A;&#x62DF;&#x7F51;&#x5361;&#x8FD8;&#x662F;&#x7269;&#x7406;&#x7F51;&#x5361;&#x6536;&#x5230;&#x4E00;&#x4E2A;&#x5305;&#xFF0C;&#x5BF9;&#x5185;&#x6838;&#x6765;&#x8BF4;&#x90FD;&#x662F;&#x6536;&#x5305;&#xFF0C;&#x90FD;&#x662F;prerouting&#x94FE;&#x5F00;&#x59CB;&#x3002;&#x65E0;&#x8BBA;&#x4E00;&#x4E2A;&#x5305;&#x53BB;&#x5F80;&#x7269;&#x7406;&#x7F51;&#x5361;&#x8FD8;&#x662F;&#x865A;&#x62DF;&#x7F51;&#x5361;&#xFF0C;&#x5BF9;&#x5185;&#x6838;&#x6765;&#x8BF4;&#x90FD;&#x662F;&#x53D1;&#x51FA;&#xFF0C;&#x90FD;&#x662F;&#x4ECE;postrouting&#x7ED3;&#x675F;&#x3002;&#x672C;&#x673A;&#x8FDB;&#x7A0B;&#x6536;&#x5230;&#x5C31;&#x662F;input&#x94FE;&#xFF0C;&#x672C;&#x673A;&#x8FDB;&#x7A0B;&#x53D1;&#x51FA;&#x5C31;&#x662F;output&#x94FE;&#x3002;</p>
+<h1 id="&#x53C2;&#x8003;">&#x53C2;&#x8003;</h1>
+<p>Netfileter Packet Traversal: <a href="http://linux-ip.net/nf/nfk-traversal.html" target="_blank">http://linux-ip.net/nf/nfk-traversal.html</a></p>
+<p>&#x670D;&#x52A1;&#x53D1;&#x73B0;&#xFF1A;<a href="https://blog.csdn.net/ebay/article/details/52798074" target="_blank">https://blog.csdn.net/ebay/article/details/52798074</a></p>
+<p>&#x89C4;&#x5219;&#x94FE;&#xFF1A;<a href="https://www.cnblogs.com/charlieroro/p/9588019.html" target="_blank">https://www.cnblogs.com/charlieroro/p/9588019.html</a></p>
+<p>&#x4EE4;&#x724C;&#x6876;&#x9650;&#x6D41;&#xFF1A; <a href="https://blog.csdn.net/SunnyYoona/article/details/51228456" target="_blank">https://blog.csdn.net/SunnyYoona/article/details/51228456</a></p>
+<p>k8s Event&#xFF1A;<a href="https://blog.csdn.net/qq_34463875/article/details/53817005" target="_blank">https://blog.csdn.net/qq_34463875/article/details/53817005</a></p>
+<p>k8s SharedInformer: <a href="https://blog.csdn.net/weixin_42663840/article/details/81699303#SharedInformer%E6%A6%82%E8%BF%B0" target="_blank">https://blog.csdn.net/weixin_42663840/article/details/81699303#SharedInformer%E6%A6%82%E8%BF%B0</a></p>
+<p>go Timer:  <a href="https://tonybai.com/2016/12/21/how-to-use-timer-reset-in-golang-correctly/" target="_blank">https://tonybai.com/2016/12/21/how-to-use-timer-reset-in-golang-correctly/</a></p>
+<p>ip_conntrack &#x610F;&#x4E49;&#xFF1A;<a href="https://blog.csdn.net/dog250/article/details/7266082" target="_blank">https://blog.csdn.net/dog250/article/details/7266082</a></p>
+<p>go &#x624B;&#x518C;&#xFF1A;<a href="https://cloud.tencent.com/developer/doc/1101" target="_blank">https://cloud.tencent.com/developer/doc/1101</a></p>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"源码分析","draft":false,"date":"2018-12-25T10:22:57+08:00","categories":"kubernetes","tags":["iptables","kube-proxy","v1.12"],"level":"1.5.1","depth":2,"previous":{"title":"kube-proxy","level":"1.5","depth":1,"ref":"","articles":[{"title":"源码分析","level":"1.5.1","depth":2,"path":"kube-proxy/kube-proxy-code-analysis.md","ref":"kube-proxy/kube-proxy-code-analysis.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":[],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"rootdeep <zhiguo.lee@foxmail.com>","pdf":{"pageBreaksBefore":"/","headerTemplate":null,"paperSize":"a4","margin":{"right":62,"left":62,"top":36,"bottom":36},"fontSize":12,"fontFamily":"Arial","footerTemplate":null,"chapterMark":"pagebreak","pageNumbers":false},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"k8s 相关源码分析","links":{"sidebar":{"rootdeep":"http://rootdeep.github.io"}},"gitbook":"*","description":"This is a sample book created by gitbook","extension":null},"file":{"path":"kube-proxy/kube-proxy-code-analysis.md","mtime":"2019-01-04T09:22:20.806Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-01-04T09:30:09.128Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+
